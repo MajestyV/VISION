@@ -1,17 +1,11 @@
 import numpy as np
-import matplotlib.pyplot as plt
-from matplotlib.ticker import MultipleLocator, FormatStrFormatter
-from mpl_toolkits.mplot3d import Axes3D
-from os import path
 
-class plot:
-    """ This class of functions is designed to plot scientific figures in a uniform format."""
+# 颜色模块
+class color:
+    """ This class of functions is designed to provide parameter for different color. """
     def __init__(self):
-        self.name = plot
-        self.default_directory = path.dirname(__file__) + '/'  # 设置这个代码文件所在的文件夹为默认读写目录
-
-    ###############################################################################################################
-    # 颜色模块
+        self.name = color
+    
     # RGB值转换函数
     def RGB(self,r,g,b): return np.array([r,g,b])/255.0  # 将RGB值归一化的函数，只有归一化的RGB值才能被matplotlib读取
 
