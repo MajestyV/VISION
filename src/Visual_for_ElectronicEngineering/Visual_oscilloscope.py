@@ -12,12 +12,14 @@ import src.FigureSetting as fs
 
 if __name__ == '__main__':
     # data_directory = 'E:/Projects/EchoStateMachine/Data/ResNode测试/ResNode_20240510/Triangular'  # MMW502
-    data_directory = 'E:/Projects/EchoStateMachine/Data/ResNode测试/Temperary'
+    # data_directory = 'E:/Projects/EchoStateMachine/Data/ResNode测试/Temperary'
+    data_directory = 'D:/PhD_research/EchoStateMachine/Data/ResNode/Triangular'  # Lingjiang
     # input_file = 'SDS2354X_HD_Binary_C1_1_Analog_Trace.csv'
     # output_file = 'SDS2354X_HD_Binary_C3_1_Analog_Trace.csv'
 
-    file_name_list = ['SDS2354X_HD_Binary_C1_8_Analog_Trace.csv',
-                      'SDS2354X_HD_Binary_C3_8_Analog_Trace.csv']
+    file_name_list = ['SDS2354X_HD_Binary_C1_1_Analog_Trace.csv',
+                      'SDS2354X_HD_Binary_C3_1_Analog_Trace.csv',
+                      'SDS2354X_HD_Binary_C3_2_Analog_Trace.csv']
                       #'SDS2354X_HD_Binary_C3_2_Analog_Trace.csv',
                       #'SDS2354X_HD_Binary_C3_11_Analog_Trace.csv',]
 
@@ -26,7 +28,7 @@ if __name__ == '__main__':
 
     for i in range(len(file_name_list)):
         data_file = data_directory+ '/' + file_name_list[i]
-        data = gd.GetData_Siglent(data_file, num_rows=2000, sampling_interval=10000)
+        data = gd.GetData_Siglent(data_file, num_rows=500, sampling_interval=40000)
         plt.plot(data[:, 0], data[:, 1])
 
     plt.xlim(data[0, 0], data[-1, 0])  # 设置x轴（时间轴）范围

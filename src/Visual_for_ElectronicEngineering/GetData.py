@@ -37,13 +37,15 @@ if __name__ == '__main__':
 
     # 默认的数据路径
     # example_data_directory = 'E:/Projects/EchoStateMachine/Data/ResNode测试/ResNode_20240510/Triangular'  # MMW502
-    example_data_directory = 'E:/Projects/EchoStateMachine/Data/ResNode测试/Temperary'
+    # example_data_directory = 'E:/Projects/EchoStateMachine/Data/ResNode测试/Temperary'
+    example_data_directory = 'D:/PhD_research/EchoStateMachine/Data/ResNode/Working_dir/Triangular'  # Lingjiang
 
     example_data_filename = 'SDS2354X_HD_Binary_C1_1_Analog_Trace.csv'  # 示例数据文件
 
     example_data_file = f"{example_data_directory}/{example_data_filename}"  # 示例数据文件的绝对地址
 
-    default_saving_directory = os.path.abspath(os.path.join(os.getcwd(), '..'))+'/Default_data_folder'  # 默认的数据存储路径
+    # default_saving_directory = os.path.abspath(os.path.join(os.getcwd(), '..'))+'/Default_data_folder'  # 默认的数据存储路径
+    default_saving_directory = 'D:/PhD_research/EchoStateMachine/Data/ResNode/Working_dir/data'  # Lingjiang
 
     # 加载命令行解析器
     parser = argparse.ArgumentParser()
