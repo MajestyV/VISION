@@ -33,19 +33,21 @@ def GetData_Siglent(data_file: str, skiprows: int=6, num_rows: int=500, sampling
 if __name__ == '__main__':
     # 主程序可用于在命令行终端快速提取数据到txt文件
 
-    default_mode = 'multiple'  # 默认的读取模式
+    default_mode = ('multiple')  # 默认的读取模式
 
     # 默认的数据路径
     # example_data_directory = 'E:/Projects/EchoStateMachine/Data/ResNode测试/ResNode_20240510/Triangular'  # MMW502
+    example_data_directory = 'D:/OneDrive/OneDrive - The Chinese University of Hong Kong/Desktop/ResNode/Working_dir/Temporary'  # MMW502临时数据文件夹
     # example_data_directory = 'E:/Projects/EchoStateMachine/Data/ResNode测试/Temperary'
-    example_data_directory = 'D:/PhD_research/EchoStateMachine/Data/ResNode/Working_dir/Triangular'  # Lingjiang
+    # example_data_directory = 'D:/PhD_research/EchoStateMachine/Data/ResNode/Working_dir/Triangular'  # Lingjiang
 
-    example_data_filename = 'SDS2354X_HD_Binary_C1_1_Analog_Trace.csv'  # 示例数据文件
+    example_data_filename = 'SDS2354X_HD_Binary_C1_2_Analog_Trace.csv'  # 示例数据文件
 
     example_data_file = f"{example_data_directory}/{example_data_filename}"  # 示例数据文件的绝对地址
 
     # default_saving_directory = os.path.abspath(os.path.join(os.getcwd(), '..'))+'/Default_data_folder'  # 默认的数据存储路径
-    default_saving_directory = 'D:/PhD_research/EchoStateMachine/Data/ResNode/Working_dir/data'  # Lingjiang
+    # default_saving_directory = 'D:/PhD_research/EchoStateMachine/Data/ResNode/Working_dir/data'  # Lingjiang
+    default_saving_directory = 'D:/OneDrive/OneDrive - The Chinese University of Hong Kong/Desktop/ResNode/Working_dir/Activation'  # MMW502
 
     # 加载命令行解析器
     parser = argparse.ArgumentParser()
