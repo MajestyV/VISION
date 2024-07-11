@@ -37,7 +37,8 @@ if __name__ == '__main__':
 
     # 默认的数据路径
     # example_data_directory = 'E:/Projects/EchoStateMachine/Data/ResNode测试/ResNode_20240510/Triangular'  # MMW502
-    example_data_directory = 'D:/OneDrive/OneDrive - The Chinese University of Hong Kong/Desktop/ResNode/Working_dir/Temporary'  # MMW502临时数据文件夹
+    # example_data_directory = 'D:/OneDrive/OneDrive - The Chinese University of Hong Kong/Desktop/ResNode/Working_dir/Temporary'  # MMW502临时数据文件夹
+    example_data_directory = 'E:/Projects/EchoStateMachine/Data/ResNode测试/Activation/Raw data'  # MMW405
     # example_data_directory = 'E:/Projects/EchoStateMachine/Data/ResNode测试/Temperary'
     # example_data_directory = 'D:/PhD_research/EchoStateMachine/Data/ResNode/Working_dir/Triangular'  # Lingjiang
 
@@ -47,7 +48,8 @@ if __name__ == '__main__':
 
     # default_saving_directory = os.path.abspath(os.path.join(os.getcwd(), '..'))+'/Default_data_folder'  # 默认的数据存储路径
     # default_saving_directory = 'D:/PhD_research/EchoStateMachine/Data/ResNode/Working_dir/data'  # Lingjiang
-    default_saving_directory = 'D:/OneDrive/OneDrive - The Chinese University of Hong Kong/Desktop/ResNode/Working_dir/Activation'  # MMW502
+    # default_saving_directory = 'D:/OneDrive/OneDrive - The Chinese University of Hong Kong/Desktop/ResNode/Working_dir/Activation'  # MMW502
+    default_saving_directory = 'D:/OneDrive/OneDrive - The Chinese University of Hong Kong/Desktop/ResNode/Working_dir/Activation/Extracted data'  # MMW405
 
     # 加载命令行解析器
     parser = argparse.ArgumentParser()
@@ -84,8 +86,12 @@ if __name__ == '__main__':
         # 在这个模式下，不需要指定文件名，只需要指定文件夹，程序会自动读取文件夹下的所有文件中的数据
         file_list = os.listdir(args.data_directory)
         for file in file_list:
+            # data = GetData_Siglent(data_file=f"{args.data_directory}/{file}",
+                                   # skiprows=args.skiprows, num_rows=args.num_rows, sampling_interval=args.sampling_interval,
+                                   # usecols=args.usecols, delimiter=args.delimiter)
             data = GetData_Siglent(data_file=f"{args.data_directory}/{file}",
-                                   skiprows=args.skiprows, num_rows=args.num_rows, sampling_interval=args.sampling_interval,
+                                   skiprows=args.skiprows, num_rows=2000,
+                                   sampling_interval=2000,
                                    usecols=args.usecols, delimiter=args.delimiter)
             np.savetxt(f"{args.saving_directory}/{file}", data, delimiter=',')  # 保存数据
     else:
