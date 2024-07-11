@@ -132,7 +132,7 @@ class TransistorCharacteristics:
 
         d2I_dV2_selected = d2I_dV2[np.logical_and(Vgs >= Vgs_start, Vgs <= Vgs_end)]  # 获取评估范围内的数据索引
         d2I_dV2_max = np.max(d2I_dV2_selected)  # 获取最大值
-        Vth = Vgs[np.where(d2I_dV2 == d2I_dV2_max)]  # 获取阈值电压
+        Vth = Vgs[np.where(d2I_dV2 == d2I_dV2_max)][0]  # 获取阈值电压
 
         return Vth, dI_dV, d2I_dV2
 
