@@ -2,7 +2,7 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
-from src.Visual_for_ElectronicEngineering.KEITHLEY4200.KEITHLEY4200_GetData import GetData_KEITHLEY4200_OldModel  # 数据读取函数
+from src.ElectronicEngineering.KEITHLEY4200.KEITHLEY4200_GetData import GetData_KEITHLEY4200_OldModel  # 数据读取函数
 
 # 通过定义一个字典，方便地将缩写转换为全称
 abbrev_dict = {'t': 'Time', 'Gm': 'GM',

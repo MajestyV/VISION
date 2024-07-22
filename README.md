@@ -12,9 +12,9 @@ Recommended python version: 3.10 (which is used by myself)
 Anyway, in theory it should work with any python version >= 2.7.
 
 Required packages:
-- [Matplotlib](https://matplotlib.org/)
-- [Numpy](https://numpy.org/)
-- [Pandas](https://pandas.pydata.org/)
+- *Data acquisition*: [Pandas](https://pandas.pydata.org/)
+- *Scientific calculus*: [Numpy](https://numpy.org/) & [Scipy](https://www.scipy.org/)
+- *Visualization*: [Matplotlib](https://matplotlib.org/) & [Seaborn](https://seaborn.pydata.org/)
 
 # III. Installation
 ```bash
