@@ -35,17 +35,18 @@ if __name__ == '__main__':
 
     default_mode = ('single')  # 默认的读取模式
 
-    data_dir_key = 'Lingjiang_RO'  # 数据文件夹路径字典的键
+    data_dir_key = 'MMW405_SolutionIC'  # 数据文件夹路径字典的键
 
-    data_filename = 'SDS2354X_HD_Binary_C3_1_Analog_Trace.csv'  # 数据文件名
+    data_filename = 'SDS2354X_HD_Binary_C3_5_Analog_Trace.csv'  # 数据文件名
 
-    saving_dir_key = 'Lingjiang_RO'  # 数据保存路径字典的键
+    saving_dir_key = 'MMW405_SolutionIC'  # 数据保存路径字典的键
 
 
     # 预设各类路径字典
     # 数据文件夹路径字典
     default_data_dir_dict = {
         'MMW405': 'E:/Projects/EchoStateMachine/Data/ResNode测试/Activation/Raw data',  # MMW405
+        'MMW405_SolutionIC': 'E:/Projects/Jingfang Pei/Solution-processed IC/Data/OSC/RingOscillator/20240711/csv',  # MMW405 SolutionIC
         'Lingjiang_RO': 'D:/PhD_research/Jingfang Pei/Solution-processed IC/Data/OSC/RingOscillator/20240711_OSC_RO'  # Lingjiang RO
     }
 
@@ -55,6 +56,7 @@ if __name__ == '__main__':
     # 数据保存路径字典
     default_saving_dir_dict = {
         'MMW405': 'D:/OneDrive/OneDrive - The Chinese University of Hong Kong/Desktop/ResNode/Working_dir/Activation/Extracted data',  # MMW405
+        'MMW405_SolutionIC': 'E:/Projects/Jingfang Pei/Solution-processed IC/Temporary_working_dir',  # MMW405 SolutionIC
         'Lingjiang_RO': 'D:/PhD_research/Jingfang Pei/Solution-processed IC/Data/OSC/RingOscillator/Working_dir'  # Lingjiang RO
     }
 
@@ -105,7 +107,7 @@ if __name__ == '__main__':
                                # usecols=args.usecols, delimiter=args.delimiter)
         # Temporary
         data = GetData_Siglent(data_file=args.data_file,
-                               skiprows=args.skiprows, num_rows=100, sampling_interval=1,
+                               skiprows=args.skiprows, num_rows=400000, sampling_interval=1,
                                usecols=args.usecols, delimiter=args.delimiter)
 
         np.savetxt(f"{args.saving_directory}/{args.file_name}", data, delimiter=',')  # 保存数据

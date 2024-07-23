@@ -14,9 +14,13 @@ def get_fft_values(y_values, N, f_s):
 
 if __name__ == '__main__':
     # 提取数据
-    data_directory = '/Users/liusongwei/Desktop/SolutionIC_Temporary/Data/RO'  # Macbook
+    working_place = 'MMW405'
+
+    data_dir_dict = {'Macbook': '/Users/liusongwei/Desktop/SolutionIC_Temporary/Data/RO',
+                     'MMW405': 'E:/Projects/Jingfang Pei/Solution-processed IC/Temporary_working_dir/RO'}
+
     data_filename = 'data_100000.csv'
-    data_file = f"{data_directory}/{data_filename}"
+    data_file = f"{data_dir_dict[working_place]}/{data_filename}"
 
     data_DF = pd.read_csv(data_file)
     time = data_DF.values[:, 0]
