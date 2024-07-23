@@ -99,6 +99,7 @@ if __name__ == '__main__':
 
     # 区分模式读取
     if args.mode == 'single':  # 单文件模式
+        # 正式调用代码
         # data = GetData_Siglent(data_file=args.data_file,
                                # skiprows=args.skiprows, num_rows=args.num_rows, sampling_interval=args.sampling_interval,
                                # usecols=args.usecols, delimiter=args.delimiter)
@@ -113,6 +114,7 @@ if __name__ == '__main__':
         # 在这个模式下，不需要指定文件名，只需要指定文件夹，程序会自动读取文件夹下的所有文件中的数据
         file_list = os.listdir(args.data_directory)
         for file in file_list:
+            # 正式调用代码
             # data = GetData_Siglent(data_file=f"{args.data_directory}/{file}",
                                    # skiprows=args.skiprows, num_rows=args.num_rows, sampling_interval=args.sampling_interval,
                                    # usecols=args.usecols, delimiter=args.delimiter)
