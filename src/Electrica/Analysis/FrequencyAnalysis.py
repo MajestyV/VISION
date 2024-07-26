@@ -1,9 +1,7 @@
 import numpy as np
 from scipy.fftpack import fft
-import matplotlib.pyplot as plt
-from matplotlib.pylab import mpl
-
 import pandas as pd  # 数据提取包
+import matplotlib.pyplot as plt  # 画图包
 
 class FreqAnal:
     def __init__(self, signal_train: np.ndarray, n_sample: int, f_sample: float, window_func: str = 'identity', **kwargs):
@@ -109,12 +107,6 @@ class FreqAnal:
             raise ValueError('The mode is not supported, please select from "half" or "full" ! ! !')
 
         return x_value_dropped, y_value_dropped
-
-        # self.y_fft = y_fft[idx_min:idx_max]
-        # self.y_fft_half = y_fft_half[idx_min:]
-        # self.f_values_full = f_values_full[idx_min:idx_max]
-        # self.f_values_half = f_values_half[idx_min:]
-
 
 if __name__=='__main__':
     # 采样点选择1400个，由于设置的信号频率份量最高为600赫兹，根据采样定理知采样频率要大于信号频率2倍，因此这里设置采样频率为1400赫兹（即一秒内有1400个采样点，同样意思的）
