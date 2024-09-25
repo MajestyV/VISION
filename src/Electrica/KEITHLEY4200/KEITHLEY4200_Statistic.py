@@ -1,9 +1,7 @@
 import os
-import argparse
 import numpy as np
-from KEITHLEY4200_GetData import GetData_KEITHLEY4200_OldModel  # 数据读取模块
-from KEITHLEY4200_Analysis import TransistorCharacteristics     # 数据分析模块
-
+from src.Electrica.KEITHLEY4200.KEITHLEY4200_GetData import GetData_KEITHLEY4200_OldModel  # 数据读取模块
+from src.Electrica.KEITHLEY4200.KEITHLEY4200_Analysis import TransistorCharacteristics     # 数据分析模块
 
 import seaborn as sns
 import matplotlib.pyplot as plt
@@ -17,15 +15,21 @@ class DeviceStatistics:
     此类专用于统计器件特性
     '''
 
-    def __init__(self, data_directory: str, scaling_factor: float=1e3):
+    def __init__(self, data_directory: str, voltage_unit: str='V', current_unit: str='A'):
         '''
         初始化函数类
         '''
 
         self.data_directory = data_directory  # 数据文件夹
 
-        self.scaling_factor = scaling_factor  # 缩放因子，用于单位变换(默认为1e3)
-        self.scaling_dict = {'m': 1e-3, 'u': 1e-6, 'n': 1e-9, 'p': 1e-12, 'f': 1e-15, 'a': 1e-18}  # 缩放字典
+        self.voltage_unit = voltage_unit  # 电压单位
+        self.current_unit = current_unit  # 电流单位
+
+        # 缩放字典
+        self.scaling_dict = {'nA': 1e9, 'uA': 1e6, 'mA': 1e3, 'A': 1.0, 'kA': 1e-3, 'MA': 1e-6, 'GA': 1e-9,
+                             'nV': 1e9, 'uV': 1e6, 'mV': 1e3, 'V': 1.0, 'kV': 1e-3, 'MV': 1e-6, 'GV': 1e-9}
+        self.voltage_scaling = self.scaling_dict[voltage_unit]  # 电压缩放因子
+        self.current_scaling = self.scaling_dict[current_unit]  # 电流缩放因子
 
         self.data_dict = dict()  # 数据字典 （设置为实例变量，方便在函数类中调用）
 
@@ -81,14 +85,14 @@ class DeviceStatistics:
 
         return SS_map, on_off_ratio_map, on_off_ratio_extreme_map, leakage_avg_map, Vth_map
 
-    def Heatmap(self, character: str, data: np.ndarray, title: str, xlabel: str, ylabel: str, xtick: np.ndarray, ytick: np.ndarray, cmap: str, cbar_label: str):
+    ####################################################################################################################
+    # 以下是画图函数
+
+    def Heatmap(self, character: str) -> None:
         '''
         热力图 （关于seaborn的设置，参考：https://blog.csdn.net/weixin_45492560/article/details/106227864）
-
         '''
-        # fig = sns.heatmap(data, annot=True, fmt='.1f', cmap=cmap,
-                          # cbar_kws={'label': cbar_label})
-        # fig.set(xlabel=xlabel, ylabel=ylabel, xticklabels=xtick, yticklabels=ytick)
+        plt.figure()  # 创建一个新的画布
 
         # 开关比 (ON-OFF ratio)
         if character == 'ON_OFF_ratio':
@@ -104,12 +108,10 @@ class DeviceStatistics:
                               cbar_kws={'label': r'$20 \cdot \log_{10}(<I_{on}>/<I_{off}>)$ (dB)'})
 
         # 亚阈值摆幅（Subthreshold Swing）
-        elif character == 'SS'
-            data = self.data_dict['SS_map']*self.scaling_factor
-
+        elif character == 'SS':
+            data = self.data_dict['SS_map']*self.voltage_scaling
             fig = sns.heatmap(data, annot=True, fmt='.0f', cmap='coolwarm',
-                              cbar_kws={'label': 'Subthreshold Swing (mV/decade)'})
-
+                              cbar_kws={'label': f"Subthreshold Swing ({self.voltage_unit}/decade)"})
         else:
             raise ValueError('Invalid character! Please select a valid character parameter ! ! !')
 
@@ -119,9 +121,12 @@ class DeviceStatistics:
         # plt.savefig('./data/46/seaborn_heatmap_list.png')
         # plt.close('all')
 
-        xtick = np.arange(1, num_cycles+1, 1)  # 生成x轴刻度（从1开始）
-        ytick = np.arange(1, num_files+1, 1)   # 生成y轴刻度（从1开始）
-        # fig.set(xlabel='Column number', ylabel='Row number', xticklabels=xtick, yticklabels=ytick)  # 各种画图设置
+        # 各种画图设置
+        xtick = np.arange(1, self.data_dict['num_cycles']+1, 1)  # 生成x轴刻度（从1开始）
+        ytick = np.arange(1, self.data_dict['num_files']+1, 1)   # 生成y轴刻度（从1开始）
+        fig.set(xlabel='Column number', ylabel='Row number', xticklabels=xtick, yticklabels=ytick)
+
+        plt.tight_layout()  # 调整布局
 
         # cbar = fig.collections[0].colorbar  # 设置colorbar
 
@@ -129,45 +134,36 @@ class DeviceStatistics:
         # fig.set_ylabel('File')
         # fig.set_xticklabels('On-Off Ratio')
 
+        return
 
+    def Distribution(self, character: str) -> None:
+        '''
+        统计分布图
+        '''
+        plt.figure()  # 创建一个新的画布
 
+        # 漏电流
+        if character == 'Igs':
+            data = self.data_dict['leakage_avg_map'].flatten()*self.current_scaling  # 将二维数组展平为一维数组，然后缩放数据
+            fig = sns.displot(data, kde=True, bins=100, color='red', rug=True, log_scale=10)
+            fig.set(xlabel='Leakage current $I_{gs}$ ('+self.current_unit+')', xlim=(1e-12, 5e-8))
 
+        # 阈值电压 (Threshold voltage)
+        elif character == 'Vth':
+            data = self.data_dict['Vth_map'].flatten()*self.voltage_scaling  # 将二维数组展平为一维数组，然后缩放数据
+            fig = sns.displot(data, kde=True, bins=20, color='blue', rug=True)
+            fig.set(xlabel = 'Threshold voltage $V_{th}$ ('+self.voltage_unit+')', xlim = (100, 800))
+
+        else:
+            raise ValueError('Invalid character! Please select a valid character parameter ! ! !')
+
+        # sns.displot(leakage_avg*scaling_factor, kde=True, bins=20, color='blue', rug=True)
+        # sns.displot(data=leakage_avg, x="bill_length_mm", kind='kde')
+        # sns.displot(data=leakage_avg, x="bill_length_mm", kind='ecdf')
+
+        plt.tight_layout()  # 调整布局
+
+        return
 
 if __name__ == '__main__':
-
-    # 可视化模块
-
-    # print(leakage_avg_map)
-
-    scaling_factor = 1e3  # 缩放因子
-
-    plt.figure()
-
-    # 热力图
-
-
-
-    # 统计分布图
-
-    # 漏电流
-    leakage_avg = leakage_avg_map.flatten()  # 将二维数组展平为一维数组
-    fig = sns.displot(leakage_avg, kde=True, bins=100, color='red', rug=True, log_scale=10)
-    fig.set(xlabel = 'Leakage current $I_{gs}$ (A)', xlim = (1e-12, 5e-8))
-
-    # 阈值电压
-    # Vth = Vth_map.flatten()  # 将二维数组展平为一维数组
-    # fig = sns.displot(Vth, kde=True, bins=20, color='blue', rug=True)
-    # fig.set(xlabel = 'Threshold voltage $V_{th}$ (V)', xlim = (0.1, 0.8))
-
-    # sns.displot(leakage_avg*scaling_factor, kde=True, bins=20, color='blue', rug=True)
-    # sns.displot(data=leakage_avg, x="bill_length_mm", kind='kde')
-    # sns.displot(data=leakage_avg, x="bill_length_mm", kind='ecdf')
-
-    plt.tight_layout()  # 调整布局
-
-    # 保存图像
-    plt.savefig(args.saving_directory + '/Untitled.png')
-
-    plt.show(block=True)
-
-    exit()
+    pass

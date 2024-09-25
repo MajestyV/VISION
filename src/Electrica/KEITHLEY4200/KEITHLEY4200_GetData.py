@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import pandas as pd
-import matplotlib.pyplot as plt
 
 def GetData_KEITHLEY4200_OldModel(data_file: str, sheets_ignored: list=('Calc', 'Settings')):
     '''

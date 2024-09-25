@@ -1,179 +1,95 @@
+# 有时pycharm的文件结构和cmd的文件结构不一样，在cmd中运行会显示：ModuleNotFoundError: No module named 'src'
+# 这可以通过在脚本开头添加项目根目录到sys.path中解决，详情请参考：https://blog.csdn.net/qq_42730750/article/details/119799157
 import os
+import sys
+project_path = os.path.abspath(os.path.join(os.getcwd(), '..'))  # 项目根目录
+sys.path.append(project_path)  # 添加路径到系统路径中
+
 import argparse
-import numpy as np
-# from KEITHLEY4200_GetData import GetData_KEITHLEY4200_OldModel  # 数据读取模块
-# from KEITHLEY4200_Analysis import TransistorCharacteristics     # 数据分析模块
-
 from src import Electrica
-
-
-import seaborn as sns
 import matplotlib.pyplot as plt
 
-# 通过定义一个字典，方便地将缩写转换为全称
-abbrev_dict = {'t': 'Time', 'Gm': 'GM',
-               'V_g': 'GateV', 'V_d': 'DrainV', 'V_s': 'SourceV', 'I_g': 'GateI', 'I_d': 'DrainI', 'I_s': 'SourceI'}
+working_loc = 'JCPGH1'             # 默认工作地点
 
-def InitializeParser(default_mode: str='multiple'):
+# 默认的数据文件目录字典
+data_dir_dict = {'Macbook': '/Users/liusongwei/Desktop/SolutionIC_Temporary/Data/RO',
+                 'MMW405': 'E:/Projects/Jingfang Pei/Solution-processed IC/Temporary_working_dir/RO/20240711',
+                 'JCPGH1': 'D:/Projects/Jingfang Pei/Solution-processed IC/Data/4200/20240923 tft 20x20 array glass substrate'}
+
+# 默认的数据保存目录字典
+saving_dir_dict = {'MMW405': 'E:/Projects/Jingfang Pei/Solution-processed IC/Temporary_working_dir/RO/20240711',
+                   'JCPGH1': 'C:/Users/13682/OneDrive/桌面/Temporary_data/SolutionIC_glass'}
+
+def InitializeParser() -> argparse.Namespace:
     '''
     初始化命令行解析器, 并返回解析器对象
     '''
-
-    # 设置各种默认路径
-    # 示例数据路径
-    # example_data_directory = 'D:/Projects/Jingfang Pei/Solution-processed IC/Data/4200/20240708 tft 10x10 array'  # JCPGH1
-    example_data_directory = 'E:/Projects/Jingfang Pei/Solution-processed IC/Data/KEITHLEY4200/20240708 tft 10x10 array'  # MMW405
-
-    example_data_filename = 'line_1.xls'  # 示例数据文件
-
-    example_data_file = f"{example_data_directory}/{example_data_filename}"  # 示例数据文件的绝对地址
-
-    # example_saving_directory = 'D:/Projects/Jingfang Pei/Solution-processed IC/Data/4200/Working_dir'  # JCPGH1
-    example_saving_directory = 'E:/Projects/Jingfang Pei/Solution-processed IC/Data/KEITHLEY4200/Working_dir'  # MMW405
-
-    ####################################################################################################################
     # 加载命令行解析器
     parser = argparse.ArgumentParser()
 
-    # 读取模式
-    parser.add_argument('--mode', metavar='-M', type=str, default=default_mode, help='Mode')  # 读取模式
+    # 数据文件路径以及分析结果保存路径
+    parser.add_argument('--data_directory', metavar='-P', type=str, default=data_dir_dict[working_loc], help='Data directory')  # 数据文件夹
+    parser.add_argument('--saving_directory', metavar='-S', type=str, default=saving_dir_dict[working_loc], help='Saving directory')  # 分析结果保存文件夹
 
-    # 源数据文件参数
-    parser.add_argument('--data_file', metavar='-D', type=str, default=example_data_file,
-                        help='Source data file')  # 源数据文件绝对地址
-    parser.add_argument('--data_directory', metavar='-P', type=str, default=example_data_directory,
-                        help='Data directory')  # 源数据文件夹
+    # 基础设置
+    parser.add_argument('--voltage_unit', metavar='-V', type=str, default='mV', help='Voltage unit')  # 电压单位
+    parser.add_argument('--current_unit', metavar='-I', type=str, default='A', help='Current unit')  # 电流单位
 
-    # 数据保存参数
-    parser.add_argument('--saving_directory', metavar='-S', type=str, default=example_saving_directory,
-                        help='Saving directory')  # 数据文件
-    parser.add_argument('--file_name', metavar='-F', type=str, default='data.csv', help='File name')  # 数据文件
+    # 统计分析参数
+    parser.add_argument('--mode', metavar='-M', type=str, default='auto', help='Analysis mode')  # 分析模式
+    parser.add_argument('--ON_range', metavar='-ON', type=tuple, default=(-0.5, 0.4), help='ON range')  # ON范围
+    parser.add_argument('--OFF_range', metavar='-OFF', type=tuple, default=(0.9, 1.0), help='OFF range')  # OFF范围
+    parser.add_argument('--SS_range', metavar='-SS', type=tuple, default=(0.25, 0.3), help='SS range')  # SS范围
+    parser.add_argument('--Vth_location', metavar='-Vth', type=tuple, default=(0.2, 0.6), help='Vth location')  # 阈值电压位置
+
+    # 分析指标设置
+    parser.add_argument('--heatmap', metavar='-H', type=tuple, nargs='+',
+                        default=('ON_OFF_ratio', 'ON_OFF_ratio_extreme', 'SS'), help='Heatmap')  # 热图
+    parser.add_argument('--distribution', metavar='-D', type=tuple, nargs='+', default=('Igs', 'Vth'),
+                        help='Distribution')  # 分布图
+
+    # 图像保存参数
+    parser.add_argument('--format', metavar='-F', type=str or tuple, default='png', help='Figure format')  # 图像保存格式
 
     args = parser.parse_args()
 
     return args
 
-    ####################################################################################################################
-
-    # 区分模式读取
-    #if args.mode == 'single':  # 单文件模式
-        #data = GetData_Siglent(data_file=args.data_file,
-                               #skiprows=args.skiprows, num_rows=args.num_rows, sampling_interval=args.sampling_interval,
-                               #usecols=args.usecols, delimiter=args.delimiter)
-        #np.savetxt(f"{args.saving_directory}/{args.file_name}", data, delimiter=',')  # 保存数据
-
-    #elif args.mode == 'multiple':  # 多文件模式
-        # 在这个模式下，不需要指定文件名，只需要指定文件夹，程序会自动读取文件夹下的所有文件中的数据
-        #file_list = os.listdir(args.data_directory)
-        #for file in file_list:
-            #data = GetData_Siglent(data_file=f"{args.data_directory}/{file}",
-                                   #skiprows=args.skiprows, num_rows=args.num_rows,
-                                   #sampling_interval=args.sampling_interval,
-                                   #usecols=args.usecols, delimiter=args.delimiter)
-            #np.savetxt(f"{args.saving_directory}/{file}", data, delimiter=',')  # 保存数据
-    #else:
-        #print('Invalid mode! Please select a valid mode parameter: single or multiple ! ! !')
-        #exit()
-
-
-
 if __name__ == '__main__':
-    args = InitializeParser(default_mode='multiple')  # 初始化命令行解析器
+    args = InitializeParser()  # 初始化命令行解析器
 
-    if args.mode == 'multiple':  # 多文件模式
-        # 在这个模式下，不需要指定文件名，只需要指定文件夹，程序会自动读取文件夹下的所有文件中的数据
-        file_list = os.listdir(args.data_directory)
-        num_files = len(file_list)  # 计算数据文件的数量
-        example_data = GetData_KEITHLEY4200_OldModel(data_file=f"{args.data_directory}/{file_list[0]}")
-        num_cycles = len(example_data)  # 计算测试循环次数，即数据列表的长度
+    # 创建统计器件特性对象
+    statistic = Electrica.KEITHLEY4200.DeviceStatistics(data_directory=args.data_directory, voltage_unit=args.voltage_unit,
+                                                        current_unit=args.current_unit)
 
-        # 创建一系列全零数组，用于存储数据
-        SS_map = np.zeros((num_files, num_cycles), dtype=float)  # SS - Subthreshold Swing (亚阈值摆幅)
-        on_off_ratio_map = np.zeros((num_files, num_cycles), dtype=float)  # 开关比
-        on_off_ratio_extreme_map = np.zeros((num_files, num_cycles), dtype=float)  # 开关比（极端值）
-        leakage_avg_map = np.zeros((num_files, num_cycles), dtype=float)  # 平均漏电流
-        Vth_map = np.zeros((num_files, num_cycles), dtype=float)  # 阈值电压
+    # 统计器件特性
+    statistic.Analysis(mode=args.mode, ON_range=args.ON_range, OFF_range=args.OFF_range, SS_range=args.SS_range,
+                       Vth_location=args.Vth_location)
 
-        for i in range(num_files):
-            data = GetData_KEITHLEY4200_OldModel(data_file=f"{args.data_directory}/{file_list[i]}")
+    # 热度图
+    for character in args.heatmap:
+        statistic.Heatmap(character=character)  # 画热度图
 
-            for j in range(num_cycles):
-                transistor = TransistorCharacteristics(data=data[j])  # 创建一个晶体管特性对象
-                Vgs, Id, Is, Ig = transistor.TransferCurve()  # 获取传输曲线
-                on_off_ratio = transistor.OnOffRatio((-0.5, -0.2), (1.2, 1.5))  # 计算开关比
-                on_off_ratio_extreme = transistor.OnOffRatio_Extreme()  # 计算开关比（极端值）
-                SS = transistor.SubthresholdSwing((0.7, 0.9))  # 计算亚阈值摆幅
-                leakage_avg = transistor.LeakageCurrent()  # 计算平均漏电流
-                Vth, dI_dV, d2I_dV2 = transistor.ThresholdVoltage((0.25, 1.25))  # 计算阈值电压
+        if isinstance(args.format, str):  # 只指定了一个格式
+            plt.savefig(f"{args.saving_directory}/{character}.{args.format}")  # 保存图像
 
-                # 存储数据
-                SS_map[i,j] = SS  # 亚阈值摆幅
-                on_off_ratio_map[i,j] = on_off_ratio  # 开关比
-                on_off_ratio_extreme_map[i,j] = on_off_ratio_extreme  # 开关比（极端值）
-                leakage_avg_map[i,j] = leakage_avg  # 平均漏电流
-                Vth_map[i,j] = Vth  # 阈值电压
+        elif isinstance(args.format, tuple):  # 指定了多个格式
+            for fmt in args.format:
+                plt.savefig(f"{args.saving_directory}/{character}.{args.format}")
 
-    else:
-        raise ValueError('Invalid mode! Please select a valid mode parameter: "single" or "multiple" ! ! !')
+        plt.close()  # 关闭图像
 
+    # 分布图
+    for character in args.distribution:
+        statistic.Distribution(character=character)  # 画分布图
 
-    # 可视化模块
+        if isinstance(args.format, str):
+            plt.savefig(f"{args.saving_directory}/{character}.{args.format}")
 
-    # print(leakage_avg_map)
+        elif isinstance(args.format, tuple):
+            for fmt in args.format:
+                plt.savefig(f"{args.saving_directory}/{character}.{args.format}")
 
-    scaling_factor = 1e3  # 缩放因子
+        plt.close()  # 关闭图像
 
-    plt.figure()
-
-    # 热力图
-
-    # 关于seaborn的设置，参考：https://blog.csdn.net/weixin_45492560/article/details/106227864
-    # 关于倍频得讨论：https://blog.csdn.net/cabbage2008/article/details/52043646
-
-    # 开关比
-    # fig = sns.heatmap(20*np.log10(on_off_ratio_map), annot=True, fmt='.1f', cmap='magma', vmin=0, vmax=100,
-                      # cbar_kws={'label': r'$20 \cdot \log_{10}(<I_{on}>/<I_{off}>)$ (dB)'})
-    # 亚阈值摆幅
-    # fig = sns.heatmap(SS_map * scaling_factor, annot=True, fmt='.0f', cmap='coolwarm',
-                      # cbar_kws={'label': 'Subthreshold Swing (mV/decade)'})
-
-    # sns.heatmap(np.log10(on_off_ratio_extreme_map), annot=True, fmt='.1f', cmap='coolwarm', cbar_kws={'label': 'On-Off Ratio'})
-    # sns.heatmap(leakage_avg_map)
-    # sns.heatmap(SS_map*1e3, annot=True, fmt='.0f', cmap='coolwarm', cbar_kws={'label': 'Subthreshold Swing (mV/decade)'})
-    # plt.savefig('./data/46/seaborn_heatmap_list.png')
-    # plt.close('all')
-
-    # xtick = np.arange(1, num_cycles+1, 1)  # 生成x轴刻度（从1开始）
-    # ytick = np.arange(1, num_files+1, 1)   # 生成y轴刻度（从1开始）
-    # fig.set(xlabel='Column number', ylabel='Row number', xticklabels=xtick, yticklabels=ytick)  # 各种画图设置
-
-    # cbar = fig.collections[0].colorbar  # 设置colorbar
-
-    #fig.set_xlabel('Cycle')
-    #fig.set_ylabel('File')
-    #fig.set_xticklabels('On-Off Ratio')
-
-    # 统计分布图
-
-    # 漏电流
-    leakage_avg = leakage_avg_map.flatten()  # 将二维数组展平为一维数组
-    fig = sns.displot(leakage_avg, kde=True, bins=100, color='red', rug=True, log_scale=10)
-    fig.set(xlabel = 'Leakage current $I_{gs}$ (A)', xlim = (1e-12, 5e-8))
-
-    # 阈值电压
-    # Vth = Vth_map.flatten()  # 将二维数组展平为一维数组
-    # fig = sns.displot(Vth, kde=True, bins=20, color='blue', rug=True)
-    # fig.set(xlabel = 'Threshold voltage $V_{th}$ (V)', xlim = (0.1, 0.8))
-
-    # sns.displot(leakage_avg*scaling_factor, kde=True, bins=20, color='blue', rug=True)
-    # sns.displot(data=leakage_avg, x="bill_length_mm", kind='kde')
-    # sns.displot(data=leakage_avg, x="bill_length_mm", kind='ecdf')
-
-    plt.tight_layout()  # 调整布局
-
-    # 保存图像
-    plt.savefig(args.saving_directory + '/Untitled.png')
-
-    plt.show(block=True)
-
-    exit()
+    print('Analysis completed!')
