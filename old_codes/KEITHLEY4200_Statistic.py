@@ -1,7 +1,7 @@
 import os
 import numpy as np
 from src.Electrica.KEITHLEY4200.KEITHLEY4200_GetData import GetData_KEITHLEY4200_OldModel  # 数据读取模块
-from src.Electrica.KEITHLEY4200.KEITHLEY4200_Analysis import TransistorCharacteristics     # 数据分析模块
+from src.Electrica.KEITHLEY4200.KEITHLEY4200_Analysis_FET import TransistorCharacteristics     # 数据分析模块
 
 import seaborn as sns
 import matplotlib.pyplot as plt
