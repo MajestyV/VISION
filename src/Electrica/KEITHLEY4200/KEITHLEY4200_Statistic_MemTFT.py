@@ -32,7 +32,8 @@ class MemTransistorStatistics:
         self.data_dict = dict()  # 数据字典 （设置为实例变量，方便在函数类中调用）
 
     def Analysis(self, mode: str, channel_type: str, analysis_subject: str, ON_range: tuple, OFF_range: tuple,
-                 V_HalfWidth: float, window_size: int,  boundary_cond: str, evaluation_range: tuple) -> tuple:
+                 V_HalfWidth: float, window_size: int,  boundary_cond: str, Vth_eval_range: tuple, mem_eval_range: tuple,
+                 SS_eval_range: tuple[tuple,tuple]) -> tuple:
         '''
         分析函数
         '''
@@ -50,11 +51,14 @@ class MemTransistorStatistics:
             Vth_map = np.zeros((num_files, num_cycles, 2), dtype=float)  # 阈值电压
             MemWindow_map = np.zeros((num_files, num_cycles), dtype=float)  # 存储窗口
             SS_map = np.zeros((num_files, num_cycles, 2), dtype=float)  # SS - Subthreshold Swing (亚阈值摆幅)
+            V_swing_map = np.zeros((num_files, num_cycles, 2), dtype=float)  # 摆幅电压
 
             for i in range(num_files):
                 data = GetData_KEITHLEY4200_OldModel(data_file=f"{self.data_directory}/{file_list[i]}")
+                print(f"File {file_list[i]} is processing ...")
 
                 for j in range(num_cycles):
+
                     # 实例化忆阻晶体管特性对象
                     mem_TFT = MemTransistorCharacteristics(data[j], channel_type=channel_type,
                                                            analysis_subject=analysis_subject)
@@ -69,14 +73,14 @@ class MemTransistorStatistics:
                     on_off_ratio = mem_TFT.OnOffRatio(on_region=ON_range, off_region=OFF_range)  # 开关比
 
                     # 阈值电压
-                    Vth_forward = mem_TFT.ThresholdVoltage(Vgs_forward, Id_forward, window_size, boundary_cond, evaluation_range)[0]
-                    Vth_backward = mem_TFT.ThresholdVoltage(Vgs_backward, Id_backward, window_size, boundary_cond, evaluation_range)[0]
+                    Vth_forward = mem_TFT.ThresholdVoltage(Vgs_forward, Id_forward, window_size, boundary_cond, Vth_eval_range)[0]
+                    Vth_backward = mem_TFT.ThresholdVoltage(Vgs_backward, Id_backward, window_size, boundary_cond, Vth_eval_range)[0]
 
                     # 存储窗口
-                    memory_window = mem_TFT.MemoryWindow(window_size, boundary_cond, evaluation_range)
+                    memory_window = mem_TFT.MemoryWindow(window_size, boundary_cond, mem_eval_range)
 
                     # 亚阈值摆幅
-                    SS = mem_TFT.SubthresholdSwing(V_HalfWidth, window_size, boundary_cond, evaluation_range)
+                    SS, V_swing = mem_TFT.SubthresholdSwing(V_HalfWidth, window_size, boundary_cond, SS_eval_range)
 
                     # 存储数据
                     leakage_avg_map[i, j] = leakage  # 平均漏电流
@@ -85,8 +89,9 @@ class MemTransistorStatistics:
                     Vth_map[i, j] = (Vth_forward,Vth_backward)  # 阈值电压
                     MemWindow_map[i,j] = memory_window  # 储存窗口
                     SS_map[i, j] = SS  # 亚阈值摆幅
+                    V_swing_map[i, j] = V_swing  # 摆幅电压
 
-                    print(f"File {i+1}/{num_files}, Cycle {j+1}/{num_cycles} is done ! ! !")
+                    print(f"Cycle {j+1}/{num_cycles} is done ! ! !")
 
         else:
             raise ValueError('Invalid mode! Please select a valid mode parameter: "single" or "multiple" ! ! !')
@@ -97,21 +102,22 @@ class MemTransistorStatistics:
         # 将数据保存到实例变量字典中方便外部调用
         self.data_dict['leakage_avg_map'] = leakage_avg_map
         self.data_dict['on_off_ratio_map'] = on_off_ratio_map
-        self.data_dict['on_off_ratio_extreme_map'] = on_off_ratio_extremum_map
+        self.data_dict['on_off_ratio_extremum_map'] = on_off_ratio_extremum_map
         self.data_dict['Vth_map'] = Vth_map
         self.data_dict['MemWindow_map'] = MemWindow_map
         self.data_dict['SS_map'] = SS_map
+        self.data_dict['V_swing_map'] = V_swing_map
 
         return leakage_avg_map, on_off_ratio_map, on_off_ratio_extremum_map, Vth_map, MemWindow_map, SS_map
 
     ####################################################################################################################
     # 以下是画图函数
 
-    def Heatmap(self, character: str) -> None:
+    def Heatmap(self, character: str, figsize: tuple[float,float]=(12,8)) -> None:
         '''
         热力图 （关于seaborn的设置，参考：https://blog.csdn.net/weixin_45492560/article/details/106227864）
         '''
-        plt.figure()  # 创建一个新的画布
+        plt.figure(figsize=figsize)  # 创建一个新的画布
 
         # 开关比 (ON-OFF ratio)
         if character == 'ON_OFF_ratio_forward':
@@ -127,16 +133,16 @@ class MemTransistorStatistics:
         # 极限开关比
         elif character == 'ON_OFF_ratio_extremum_forward':
             data = self.data_dict['on_off_ratio_extremum_map'][:,:,0]
-            fig = sns.heatmap(20 * np.log10(data), annot=True, fmt='.1f', cmap='magma', vmin=0, vmax=100,
-                              cbar_kws={'label': r'$20 \cdot \log_{10}(<I_{on}>/<I_{off}>)$ (dB)'})
+            fig = sns.heatmap(20 * np.log10(data), annot=True, fmt='.1f', cmap='magma', vmin=0, vmax=120,
+                              cbar_kws={'label': r'$20 \cdot \log_{10}(I_{max}/I_{min})$ (dB)'})
         elif character == 'ON_OFF_ratio_extremum_backward':
             data = self.data_dict['on_off_ratio_extremum_map'][:,:,1]
-            fig = sns.heatmap(20 * np.log10(data), annot=True, fmt='.1f', cmap='magma', vmin=0, vmax=100,
-                              cbar_kws={'label': r'$20 \cdot \log_{10}(<I_{on}>/<I_{off}>)$ (dB)'})
+            fig = sns.heatmap(20 * np.log10(data), annot=True, fmt='.1f', cmap='magma', vmin=0, vmax=120,
+                              cbar_kws={'label': r'$20 \cdot \log_{10}(I_{max}/I_{min})$ (dB)'})
 
         elif character == 'memory_window':
             data = self.data_dict['MemWindow_map']*self.voltage_scaling
-            fig = sns.heatmap(data, annot=True, fmt='.0f', cmap='coolwarm',
+            fig = sns.heatmap(data, annot=True, fmt='.1f', cmap='coolwarm',
                               cbar_kws={'label': f"Memory Window ({self.voltage_unit})"})
 
         # 亚阈值摆幅（Subthreshold Swing）
@@ -171,7 +177,7 @@ class MemTransistorStatistics:
         if character == 'leakage':
             data = self.data_dict['leakage_avg_map'].flatten()*self.current_scaling  # 将二维数组展平为一维数组，然后缩放数据
             fig = sns.displot(data, kde=True, bins=100, color='red', rug=True, log_scale=10)
-            fig.set(xlabel='Leakage current $I_{gs}$ ('+self.current_unit+')', xlim=(1e-12, 5e-8))
+            fig.set(xlabel='Leakage current $I_{gs}$ ('+self.current_unit+')', xlim=(1e-12, 1e-7))
 
         # 阈值电压 (Threshold voltage)
         elif character == 'Vth':

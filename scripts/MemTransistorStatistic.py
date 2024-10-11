@@ -32,7 +32,7 @@ def InitializeParser() -> argparse.Namespace:
     parser.add_argument('--saving_directory', metavar='-S', type=str, default=saving_dir_dict[working_loc], help='Saving directory')  # 分析结果保存文件夹
 
     # 基础设置
-    parser.add_argument('--voltage_unit', metavar='-V', type=str, default='mV', help='Voltage unit')  # 电压单位
+    parser.add_argument('--voltage_unit', metavar='-V', type=str, default='V', help='Voltage unit')  # 电压单位
     parser.add_argument('--current_unit', metavar='-I', type=str, default='A', help='Current unit')  # 电流单位
 
     # 统计分析参数
@@ -44,20 +44,25 @@ def InitializeParser() -> argparse.Namespace:
     parser.add_argument('--OFF_range', metavar='-OFF', type=tuple, default=(7, 8), help='OFF range')  # OFF范围
     # parser.add_argument('--SS_range', metavar='-SS', type=tuple, default=(0.25, 0.3), help='SS range')  # SS范围
 
-    parser.add_argument('--V_HalfWidth', metavar='-V_HalfWidth', type=float, default=0.1, help='V HalfWidth')  # 阈值电压半宽度
+    parser.add_argument('--V_HalfWidth', metavar='-V_HalfWidth', type=float, default=1, help='V HalfWidth')  # 阈值电压半宽度
     parser.add_argument('--window_size', metavar='-W', type=int, default=5, help='Window size')  # 窗口大小
     parser.add_argument('--boundary_cond', metavar='-B', type=str, default='same', help='Boundary condition')  # 边界条件
-    parser.add_argument('--evaluation_range', metavar='-E', type=tuple, default=(-6, 8), help='Evaluation range')  # 评估范围
+    parser.add_argument('--Vth_eval_range', metavar='-Vth', type=tuple, default=(-6,8), help='Vth evaluation range')  # 阈值电压评估范围
+    parser.add_argument('--mem_eval_range', metavar='-Mem', type=tuple, default=(-6,8), help='Memory evaluation range')  # 存储评估范围
+    parser.add_argument('--SS_eval_range', metavar='-SS', type=tuple, default=((-6,0), (4,7.5)), help='SS evaluation range')  # SS评估范围
 
     # parser.add_argument('--Vth_location', metavar='-Vth', type=tuple, default=(0.2, 0.6), help='Vth location')  # 阈值电压位置
 
     # 分析指标设置
-    heatmap_defualt = ('ON_OFF_ratio_forward', 'ON_OFF_ratio_backward', 'ON_OFF_ratio_Extremum', 'Memory_window',
-                       'SS_forward', 'SS_backward')
-    distribution_default = ('leakage', 'Vth')
+    heatmap_defualt = ['ON_OFF_ratio_forward', 'ON_OFF_ratio_backward', 'ON_OFF_ratio_extremum_forward',
+                       'ON_OFF_ratio_extremum_backward',
+                       'memory_window',
+                       'SS_forward', 'SS_backward']
+    distribution_default = ['leakage', 'Vth']
 
     parser.add_argument('--heatmap', metavar='-H', type=tuple, nargs='+', default=heatmap_defualt, help='Heatmap')  # 热图
-    parser.add_argument('--distribution', metavar='-D', type=tuple, nargs='+', default=distribution_default, help='Distribution')  # 分布图
+    parser.add_argument('--distribution', metavar='-D', type=tuple, nargs='+', default=distribution_default,
+                        help='Distribution')  # 分布图
 
     # 图像保存参数
     parser.add_argument('--format', metavar='-F', type=str or tuple, default='png', help='Figure format')  # 图像保存格式
@@ -76,8 +81,8 @@ if __name__ == '__main__':
     # 统计器件特性
     statistic.Analysis(mode=args.mode, channel_type=args.channel_type, analysis_subject=args.analysis_subject,
                        ON_range=args.ON_range, OFF_range=args.OFF_range, V_HalfWidth=args.V_HalfWidth,
-                       window_size=args.window_size, boundary_cond=args.boundary_cond,
-                       evaluation_range=args.evaluation_range)
+                       window_size=args.window_size, boundary_cond=args.boundary_cond, Vth_eval_range=args.Vth_eval_range,
+                       mem_eval_range=args.mem_eval_range, SS_eval_range=args.SS_eval_range)
 
     # 热度图
     for character in args.heatmap:
