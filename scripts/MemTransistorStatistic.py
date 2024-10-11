@@ -9,16 +9,18 @@ import argparse
 from src import Electrica
 import matplotlib.pyplot as plt
 
-working_loc = 'MMW405'             # 默认工作地点
+working_loc = 'JinDiMingJin'             # 默认工作地点
 
 # 默认的数据文件目录字典
 data_dir_dict = {'Macbook': '/Users/liusongwei/Desktop/SolutionIC_Temporary/Data/RO',
                  'MMW405': 'E:/Projects/Jingfang Pei/CNT-ASIC (CASIC)/Exp data/20241004 tft hfo2 40x25',
-                 'JCPGH1': 'D:/Projects/Jingfang Pei/Solution-processed IC/Data/4200/20240923 tft 20x20 array glass substrate'}
+                 'JCPGH1': 'D:/Projects/Jingfang Pei/Solution-processed IC/Data/4200/20240923 tft 20x20 array glass substrate',
+                 'JinDiMingJin': 'E:/Projects/Jingfang Pei/CASIC (CNT ASIC)/Exp data/20241004 tft hfo2 40x25'}
 
 # 默认的数据保存目录字典
 saving_dir_dict = {'MMW405': 'E:/Projects/Jingfang Pei/CNT-ASIC (CASIC)/Exp data/Working_dir',
-                   'JCPGH1': 'C:/Users/13682/OneDrive/桌面/Temporary_data/SolutionIC_glass'}
+                   'JCPGH1': 'C:/Users/13682/OneDrive/桌面/Temporary_data/SolutionIC_glass',
+                   'JinDiMingJin': 'E:/Projects/Jingfang Pei/CASIC (CNT ASIC)/Exp data/Working_dir'}
 
 def InitializeParser() -> argparse.Namespace:
     '''
@@ -44,7 +46,7 @@ def InitializeParser() -> argparse.Namespace:
     parser.add_argument('--OFF_range', metavar='-OFF', type=tuple, default=(7, 8), help='OFF range')  # OFF范围
     # parser.add_argument('--SS_range', metavar='-SS', type=tuple, default=(0.25, 0.3), help='SS range')  # SS范围
 
-    parser.add_argument('--V_HalfWidth', metavar='-V_HalfWidth', type=float, default=1, help='V HalfWidth')  # 阈值电压半宽度
+    parser.add_argument('--V_FullWidth', metavar='-V_FullWidth', type=float, default=1.0, help='V FullWidth')  # 摆幅电压衡量区间全宽度
     parser.add_argument('--window_size', metavar='-W', type=int, default=5, help='Window size')  # 窗口大小
     parser.add_argument('--boundary_cond', metavar='-B', type=str, default='same', help='Boundary condition')  # 边界条件
     parser.add_argument('--Vth_eval_range', metavar='-Vth', type=tuple, default=(-6,8), help='Vth evaluation range')  # 阈值电压评估范围
@@ -80,7 +82,7 @@ if __name__ == '__main__':
 
     # 统计器件特性
     statistic.Analysis(mode=args.mode, channel_type=args.channel_type, analysis_subject=args.analysis_subject,
-                       ON_range=args.ON_range, OFF_range=args.OFF_range, V_HalfWidth=args.V_HalfWidth,
+                       ON_range=args.ON_range, OFF_range=args.OFF_range, V_FullWidth=args.V_FullWidth,
                        window_size=args.window_size, boundary_cond=args.boundary_cond, Vth_eval_range=args.Vth_eval_range,
                        mem_eval_range=args.mem_eval_range, SS_eval_range=args.SS_eval_range)
 

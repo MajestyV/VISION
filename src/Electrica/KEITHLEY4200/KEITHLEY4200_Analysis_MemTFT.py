@@ -2,7 +2,6 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
-from Crypto.SelfTest.Hash.test_MD5 import test_data
 
 from src.Electrica.KEITHLEY4200.KEITHLEY4200_GetData import GetData_KEITHLEY4200_OldModel  # 数据读取函数
 
@@ -131,7 +130,7 @@ class MemTransistorCharacteristics:
 
         return np.abs(Vth_forward - Vth_backward)  # 返回存储窗口
 
-    def SubthresholdSwing(self,V_HalfWidth: float=1, window_size: int=10, boundary_cond: str='same',
+    def SubthresholdSwing(self,V_FullWidth: float=1, window_size: int=10, boundary_cond: str='same',
                           evaluation_range: tuple[tuple,tuple]=None) -> tuple[list,list]:
         '''
         计算亚阈值摆幅，详见：https://en.wikipedia.org/wiki/Subthreshold_swing
@@ -160,26 +159,38 @@ class MemTransistorCharacteristics:
             conv_window = np.ones(int(window_size)) / float(window_size)
             Ids_log = np.convolve(Ids_log, conv_window, boundary_cond)
 
-            # 由于对数运算改变了电流的变化率，所以不能用电流来定位摆幅电压，需要用取对数后的电流值来定位
-            dI_log_dV_abs = np.abs(np.gradient(Ids_log, Vgs))  # 计算Ids对Vgs的导数的绝对值
-            dI_log_dV_abs_selected = dI_log_dV_abs[np.logical_and(Vgs >= Vgs_start, Vgs <= Vgs_end)]  # 获取评估范围内的数据索引
-            dI_log_dV_abs_max = np.max(dI_log_dV_abs_selected)  # 获取最大值
-
-            V_swing = Vgs[np.where(dI_log_dV_abs == dI_log_dV_abs_max)][0]  # 获取摆幅电压
-
-            # 获取评估范围内的数据索引
-            index_selected = np.where(np.logical_and(Vgs >= V_swing-V_HalfWidth, Vgs <= V_swing+V_HalfWidth))
-            Vgs_selected = Vgs[index_selected]  # 获取评估范围内的Vgs数据
-            Ids_log_selected = Ids_log[index_selected]  # 获取评估范围内的Ids数据
-
             # 计算亚阈值摆幅（SS - Subthreshold Swing）
             # 利用numpy的梯度函数计算各点导数，详见：https://numpy.org/doc/stable/reference/generated/numpy.gradient.html
             if self.channel_type == 'P':
-                # 对于P型器件，Ids随Vgs增大而减小，所以需要加负号
-                SS = -np.gradient(Vgs_selected, Ids_log_selected)
+
+                # 由于对数运算改变了电流的变化率，所以不能用电流来定位摆幅电压，需要用取对数后的电流值来定位
+                dI_log_dV = np.gradient(Ids_log, Vgs)  # 计算Ids对Vgs的导数的绝对值
+                dI_log_dV_selected = dI_log_dV[np.logical_and(Vgs >= Vgs_start, Vgs <= Vgs_end)]  # 获取评估范围内的数据索引
+                dI_log_dV_min = np.min(dI_log_dV_selected)  # 获取最小值
+
+                V_swing = Vgs[np.where(dI_log_dV == dI_log_dV_min)][0]  # 获取摆幅电压
+
+                # 获取评估范围内的数据索引
+                index_selected = np.where(np.logical_and(Vgs >= V_swing-V_FullWidth, Vgs <= V_swing))  # 防止取到沟道反型点
+                Vgs_selected = Vgs[index_selected]  # 获取评估范围内的Vgs数据
+                Ids_log_selected = Ids_log[index_selected]  # 获取评估范围内的Ids数据
+
+                SS = -np.gradient(Vgs_selected, Ids_log_selected)  # 对于P型器件，Ids随Vgs增大而减小，所以需要加负号
+
             elif self.channel_type == 'N':
-                # 对于N型器件，Ids随Vgs增大而增大，所以不需要加负号
-                SS = np.gradient(Vgs_selected, Ids_log_selected)
+                dI_log_dV = np.gradient(Ids_log, Vgs)  # 计算Ids对Vgs的导数的绝对值
+                dI_log_dV_selected = dI_log_dV[np.logical_and(Vgs >= Vgs_start, Vgs <= Vgs_end)]  # 获取评估范围内的数据索引
+                dI_log_dV_min = np.max(dI_log_dV_selected)  # 与P型器件不同，N型器件Ids随Vgs增大而增大，所以取最大值
+
+                V_swing = Vgs[np.where(dI_log_dV == dI_log_dV_min)][0]  # 获取摆幅电压
+
+                # 获取评估范围内的数据索引
+                index_selected = np.where(np.logical_and(Vgs >= V_swing, Vgs <= V_swing + V_FullWidth))  # 防止取到沟道反型点
+                Vgs_selected = Vgs[index_selected]  # 获取评估范围内的Vgs数据
+                Ids_log_selected = Ids_log[index_selected]  # 获取评估范围内的Ids数据
+
+                SS = np.gradient(Vgs_selected, Ids_log_selected)  # 对于N型器件，Ids随Vgs增大而增大，所以不需要加负号
+
             else:
                 raise ValueError('Invalid channel type, please choose from "P" or "N"')
 
@@ -190,7 +201,8 @@ class MemTransistorCharacteristics:
 
 if __name__ == '__main__':
     # 数据路径
-    data_directory = 'E:/Projects/Jingfang Pei/CNT-ASIC (CASIC)/Exp data/20241004 tft hfo2 40x25'
+    # data_directory = 'E:/Projects/Jingfang Pei/CNT-ASIC (CASIC)/Exp data/20241004 tft hfo2 40x25'  # MMW405
+    data_directory = 'E:/Projects/Jingfang Pei/CASIC (CNT ASIC)/Exp data/20241004 tft hfo2 40x25'  # JinDiMingJin
     data_file = 'line_11#1_to_20.xls'
 
     # 获取数据
@@ -240,11 +252,11 @@ if __name__ == '__main__':
     print(f'Swing voltage: forward -> {V_swing[0]}, backward -> {V_swing[1]}')
 
     # 可视化模块 - log scale
-    # plt.plot(Vgs_forward, Id_forward, label='forward_sweep')
-    # plt.plot(Vgs_backward, Is_backward, label='backward_sweep')
+    plt.plot(Vgs_forward, Id_forward, label='forward_sweep')
+    plt.plot(Vgs_backward, Is_backward, label='backward_sweep')
     # plt.plot(Vgs_forward, test_data[0], label='forward_sweep_deriv')
     # plt.plot(Vgs_backward, test_data[1], label='backward_sweep_deriv')
 
     # plt.legend(loc='best')
-    # plt.yscale('log')
-    # plt.show(block=True)
+    plt.yscale('log')
+    plt.show(block=True)

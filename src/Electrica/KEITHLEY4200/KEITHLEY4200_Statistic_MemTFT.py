@@ -1,10 +1,14 @@
 import os
 import numpy as np
-from src.Electrica.KEITHLEY4200.KEITHLEY4200_GetData import GetData_KEITHLEY4200_OldModel  # 数据读取模块
+import pandas as pd
+from scipy.ndimage import label
 
+# 导入数据读取模块
+from src.Electrica.KEITHLEY4200.KEITHLEY4200_GetData import GetData_KEITHLEY4200_OldModel
 # 从KEITHLEY4200数据中提取忆阻晶体管特性的函数
 from src.Electrica.KEITHLEY4200.KEITHLEY4200_Analysis_MemTFT import MemTransistorCharacteristics
 
+# 导入绘图模块
 import seaborn as sns
 import matplotlib.pyplot as plt
 
@@ -32,7 +36,7 @@ class MemTransistorStatistics:
         self.data_dict = dict()  # 数据字典 （设置为实例变量，方便在函数类中调用）
 
     def Analysis(self, mode: str, channel_type: str, analysis_subject: str, ON_range: tuple, OFF_range: tuple,
-                 V_HalfWidth: float, window_size: int,  boundary_cond: str, Vth_eval_range: tuple, mem_eval_range: tuple,
+                 V_FullWidth: float, window_size: int,  boundary_cond: str, Vth_eval_range: tuple, mem_eval_range: tuple,
                  SS_eval_range: tuple[tuple,tuple]) -> tuple:
         '''
         分析函数
@@ -80,7 +84,7 @@ class MemTransistorStatistics:
                     memory_window = mem_TFT.MemoryWindow(window_size, boundary_cond, mem_eval_range)
 
                     # 亚阈值摆幅
-                    SS, V_swing = mem_TFT.SubthresholdSwing(V_HalfWidth, window_size, boundary_cond, SS_eval_range)
+                    SS, V_swing = mem_TFT.SubthresholdSwing(V_FullWidth, window_size, boundary_cond, SS_eval_range)
 
                     # 存储数据
                     leakage_avg_map[i, j] = leakage  # 平均漏电流
@@ -148,11 +152,11 @@ class MemTransistorStatistics:
         # 亚阈值摆幅（Subthreshold Swing）
         elif character == 'SS_forward':  # 正向扫描
             data = self.data_dict['SS_map'][:,:,0]*self.voltage_scaling
-            fig = sns.heatmap(data, annot=True, fmt='.0f', cmap='coolwarm',
+            fig = sns.heatmap(data, annot=True, fmt='.0f', cmap='coolwarm', # vmin=0, vmax=2000,
                               cbar_kws={'label': f"Subthreshold Swing ({self.voltage_unit}/decade)"})
         elif character == 'SS_backward':  # 反向扫描
             data = self.data_dict['SS_map'][:,:,1]*self.voltage_scaling
-            fig = sns.heatmap(data, annot=True, fmt='.0f', cmap='coolwarm',
+            fig = sns.heatmap(data, annot=True, fmt='.0f', cmap='coolwarm', # vmin=0, vmax=2000,
                               cbar_kws={'label': f"Subthreshold Swing ({self.voltage_unit}/decade)"})
 
         else:
@@ -176,7 +180,7 @@ class MemTransistorStatistics:
         # 漏电流
         if character == 'leakage':
             data = self.data_dict['leakage_avg_map'].flatten()*self.current_scaling  # 将二维数组展平为一维数组，然后缩放数据
-            fig = sns.displot(data, kde=True, bins=100, color='red', rug=True, log_scale=10)
+            fig = sns.displot(data, kde=True, bins=50, color='red', rug=True, log_scale=10)
             fig.set(xlabel='Leakage current $I_{gs}$ ('+self.current_unit+')', xlim=(1e-12, 1e-7))
 
         # 阈值电压 (Threshold voltage)
@@ -184,11 +188,18 @@ class MemTransistorStatistics:
             Vth_forward = self.data_dict['Vth_map'][:,:,0].flatten()*self.voltage_scaling  # 将二维数组展平为一维数组，然后缩放数据
             Vth_backward = self.data_dict['Vth_map'][:,:,1].flatten()*self.voltage_scaling
 
-            data_DF = {'Vth_forward': Vth_forward, 'Vth_backward': Vth_backward}
+            Vth_dict = {'sweep': [], 'Vth': []}
+            for Vth in Vth_forward:
+                Vth_dict['sweep'].append('forward')
+                Vth_dict['Vth'].append(Vth)
+            for Vth in Vth_backward:
+                Vth_dict['sweep'].append('backward')
+                Vth_dict['Vth'].append(Vth)
+            Vth_DF = pd.DataFrame(Vth_dict)
 
-            fig = sns.displot(data_DF, kde=True, bins=20, rug=True)
+            fig = sns.displot(Vth_DF, x='Vth', hue='sweep', kde=True, bins=50, rug=True, legend=False)
 
-            fig.set(xlabel = 'Threshold voltage $V_{th}$ ('+self.voltage_unit+')', xlim = (100, 800))
+            fig.set(xlabel = 'Threshold voltage $V_{th}$ ('+self.voltage_unit+')', xlim = (-8, 8))
 
         else:
             raise ValueError('Invalid character! Please select a valid character parameter ! ! !')
