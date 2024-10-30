@@ -66,7 +66,7 @@ def InitializeParser() -> argparse.Namespace:
     parser.add_argument('--distribution', metavar='-D', type=tuple, nargs='+', default=distribution_default,
                         help='Distribution')  # 分布图
     # 绘图参数
-    parser.add_argument('--annot', metavar='-Annot', type=bool, default=False, help='Annotation')  # 是否标注
+    parser.add_argument('--annot', metavar='-Annot', type=bool, default=True, help='Annotation')  # 是否标注
 
     # 图像保存参数
     # parser.add_argument('--format', metavar='-F', type=str or tuple, default='png', help='Figure format')  # 图像保存格式
