@@ -15,7 +15,7 @@ working_loc = 'JinDiMingJin'             # 默认工作地点
 data_dir_dict = {'Macbook': '/Users/liusongwei/Desktop/SolutionIC_Temporary/Data/RO',
                  'MMW405': 'E:/Projects/Jingfang Pei/CNT-ASIC (CASIC)/Exp data/20241004 tft hfo2 40x25',
                  'JCPGH1': 'D:/Projects/Jingfang Pei/Solution-processed IC/Data/4200/20240923 tft 20x20 array glass substrate',
-                 'JinDiMingJin': 'E:/Projects/Jingfang Pei/CASIC (CNT ASIC)/Exp data/20241004 tft hfo2 40x25'}
+                 'JinDiMingJin': 'E:/Projects/Jingfang Pei/CASIC (CNT ASIC)/Exp data/20241004 tft hfo2 40x25_selected'}
 
 # 默认的数据保存目录字典
 saving_dir_dict = {'MMW405': 'E:/Projects/Jingfang Pei/CNT-ASIC (CASIC)/Exp data/Working_dir',
@@ -65,9 +65,12 @@ def InitializeParser() -> argparse.Namespace:
     parser.add_argument('--heatmap', metavar='-H', type=tuple, nargs='+', default=heatmap_defualt, help='Heatmap')  # 热图
     parser.add_argument('--distribution', metavar='-D', type=tuple, nargs='+', default=distribution_default,
                         help='Distribution')  # 分布图
+    # 绘图参数
+    parser.add_argument('--annot', metavar='-Annot', type=bool, default=False, help='Annotation')  # 是否标注
 
     # 图像保存参数
-    parser.add_argument('--format', metavar='-F', type=str or tuple, default='png', help='Figure format')  # 图像保存格式
+    # parser.add_argument('--format', metavar='-F', type=str or tuple, default='png', help='Figure format')  # 图像保存格式
+    parser.add_argument('--format', metavar='-F', type=tuple, default=('png','eps', 'pdf'), help='Figure format')  # 图像保存格式
 
     args = parser.parse_args()
 
@@ -88,14 +91,14 @@ if __name__ == '__main__':
 
     # 热度图
     for character in args.heatmap:
-        statistic.Heatmap(character=character)  # 画热度图
+        statistic.Heatmap(character=character, annot=args.annot)  # 画热度图
 
         if isinstance(args.format, str):  # 只指定了一个格式
             plt.savefig(f"{args.saving_directory}/{character}.{args.format}")  # 保存图像
 
         elif isinstance(args.format, tuple):  # 指定了多个格式
             for fmt in args.format:
-                plt.savefig(f"{args.saving_directory}/{character}.{args.format}")
+                plt.savefig(f"{args.saving_directory}/{character}.{fmt}")
 
         plt.close()  # 关闭图像
 
@@ -108,7 +111,7 @@ if __name__ == '__main__':
 
         elif isinstance(args.format, tuple):
             for fmt in args.format:
-                plt.savefig(f"{args.saving_directory}/{character}.{args.format}")
+                plt.savefig(f"{args.saving_directory}/{character}.{fmt}")
 
         plt.close()  # 关闭图像
 
