@@ -1,0 +1,1 @@
+from .HydrogenOrbitals import Hydrogen_Wavefunction  # 专用于量子化学的氢原子轨道波函数计算
