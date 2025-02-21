@@ -15,6 +15,7 @@ working_loc = 'JCPGH1'             # 默认工作地点
 data_dir_dict = {'Macbook': '/Users/liusongwei/Desktop/SolutionIC_Temporary/Data/RO',
                  'MMW405': 'E:/Projects/Jingfang Pei/Solution-processed IC/Temporary_working_dir/RO/20240711',
                  'JCPGH1': 'D:/Projects/Jingfang Pei/Solution-processed IC/Data/4200/20240923 tft 20x20 array glass substrate'}
+                 # 'Lingjiang': 'D:/PhD_research/Jingfang Pei/Solution-processed IC/Data/4200/20240923 tft 20x20 array glass substrate'  # Not yet ready
 
 # 默认的数据保存目录字典
 saving_dir_dict = {'MMW405': 'E:/Projects/Jingfang Pei/Solution-processed IC/Temporary_working_dir/RO/20240711',

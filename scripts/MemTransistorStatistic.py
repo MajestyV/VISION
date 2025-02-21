@@ -9,18 +9,20 @@ import argparse
 from src import Electrica
 import matplotlib.pyplot as plt
 
-working_loc = 'JinDiMingJin'             # 默认工作地点
+working_loc = 'Lingjiang'             # 默认工作地点
 
 # 默认的数据文件目录字典
 data_dir_dict = {'Macbook': '/Users/liusongwei/Desktop/SolutionIC_Temporary/Data/RO',
                  'MMW405': 'E:/Projects/Jingfang Pei/CNT-ASIC (CASIC)/Exp data/20241004 tft hfo2 40x25',
                  'JCPGH1': 'D:/Projects/Jingfang Pei/Solution-processed IC/Data/4200/20240923 tft 20x20 array glass substrate',
-                 'JinDiMingJin': 'E:/Projects/Jingfang Pei/CASIC (CNT ASIC)/Exp data/20241004 tft hfo2 40x25_selected'}
+                 'JinDiMingJin': 'E:/Projects/Jingfang Pei/CASIC (CNT ASIC)/Exp data/20241004 tft hfo2 40x25_selected',
+                 'Lingjiang': 'E:/PhD_research/Jingfang Pei/CNT-ASIC (CASIC)/Exp data/20241004 tft hfo2 40x25'}
 
 # 默认的数据保存目录字典
 saving_dir_dict = {'MMW405': 'E:/Projects/Jingfang Pei/CNT-ASIC (CASIC)/Exp data/Working_dir',
                    'JCPGH1': 'C:/Users/13682/OneDrive/桌面/Temporary_data/SolutionIC_glass',
-                   'JinDiMingJin': 'E:/Projects/Jingfang Pei/CASIC (CNT ASIC)/Exp data/Working_dir'}
+                   'JinDiMingJin': 'E:/Projects/Jingfang Pei/CASIC (CNT ASIC)/Exp data/Working_dir',
+                   'Lingjiang': 'E:/PhD_research/Jingfang Pei/CNT-ASIC (CASIC)/Exp data/Working_dir'}
 
 def InitializeParser() -> argparse.Namespace:
     '''
