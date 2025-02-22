@@ -32,7 +32,15 @@ $ conda install numpy scipy matplotlib seaborn pandas xlrd ...
 
 ## III. Scripts
 
-本代码内含了一系列方便用于光电子器件及硬件系统的数据分析模块，可以用过脚本进行快速调用分析。所有的脚本都可以在终端（terminal or cmd for windows）中通过命令行调用。其中一部分脚本的使用方法如下所示。
+本代码内含了一系列方便用于光电子器件及硬件系统的数据分析模块，可以用过脚本进行快速调用分析。所有的脚本都可以在终端（terminal for unix-based OS or cmd for windows）中通过命令行调用。
+
+首先，假设VISION包已经被下载到了`~/PycharmProjects`路径，使用者可以通过运行：
+
+```shell
+$ cd ~/PycharmProjects/VISION/scripts
+```
+
+进入到脚本所在的文件夹。然后，可以通过`python`命令调用脚本。以下是其中一部分脚本的使用方法。
 
 ### A. Frequency analysis (频谱分析)
 
@@ -70,7 +78,7 @@ Below is an example command:
 $ python FrequencyAnalysis.py --file_name Empty --drop_out True --drop_out_ratio 0.05 --time_unit m --freq_unit M --set_freq_range True
 ```
 
-### B. Device statistics (器件统计)
+### B. Device statistics (器件性能统计)
 
 i. Conventional transistors
 
@@ -83,7 +91,8 @@ usage: MemTransistorStatistic.py [-h] [--data_directory -P] [--saving_directory 
                                  [--ON_range -ON] [--OFF_range -OFF] [--V_FullWidth -V_FullWidth]
                                  [--window_size -W] [--boundary_cond -B] [--Vth_eval_range -Vth]
                                  [--mem_eval_range -Mem] [--SS_eval_range -SS] [--heatmap -H [-H ...]]
-                                 [--distribution -D [-D ...]] [--annot -Annot] [--format -F]
+                                 [--distribution -D [-D ...]] [-AN] [-CM colormap] [-CM_source colormap source]
+                                 [-F format]
 
 options:
   -h, --help            show this help message and exit
@@ -111,15 +120,25 @@ options:
                         Heatmap
   --distribution -D [-D ...]
                         Distribution
-  --annot -Annot        Annotation
-  --format -F           Figure format
+  -AN, --annot          Annotation on the heatmap
+  -CM colormap, --colormap colormap
+                        Colormap of the heatmap
+  -CM_source colormap source, --colormap_source colormap source
+                        Source of the colormap
+  -F format, --format format
+                        Formats of the figures to be saved
 ```
 
 Below is an example command:
 
+```shell
+# -V_unit: Voltage unit, -I_unit: Current unit
+# -AN: Annotation on the heatmap (如果不想在热力图里标出每个点的具体数值，只需要把`-AN`去掉即可)
+# -CM: 给出色条的名称, -CM_source: 给出色条的来源, 自定义的输入custom, matplotlib自带的的输入default
+$ python MemTransistorStatistic.py -V_unit V -I_unit A -AN -CM Blue_n_Red -CM_source custom
 ```
-python MemTransistorStatistic.py
-```
+
+值得注意的是，有时候不同的指标会用不一样的单位，比如Vth用V，而SS用mV/dec。这时候，我们可以通过`-V_unit`和`-I_unit`来指定不同的单位，然后多跑两次就行。
 
 ## Problems & solutions
 

@@ -36,8 +36,8 @@ def InitializeParser() -> argparse.Namespace:
     parser.add_argument('--saving_directory', metavar='-S', type=str, default=saving_dir_dict[working_loc], help='Saving directory')  # 分析结果保存文件夹
 
     # 基础设置
-    parser.add_argument('--voltage_unit', metavar='-V', type=str, default='V', help='Voltage unit')  # 电压单位
-    parser.add_argument('--current_unit', metavar='-I', type=str, default='A', help='Current unit')  # 电流单位
+    parser.add_argument('-V_unit', '--voltage_unit', metavar='-V', type=str, default='V', help='Voltage unit')  # 电压单位
+    parser.add_argument('-I_unit', '--current_unit', metavar='-I', type=str, default='A', help='Current unit')  # 电流单位
 
     # 统计分析参数
     parser.add_argument('--mode', metavar='-M', type=str, default='auto', help='Analysis mode')  # 分析模式
@@ -68,11 +68,18 @@ def InitializeParser() -> argparse.Namespace:
     parser.add_argument('--distribution', metavar='-D', type=tuple, nargs='+', default=distribution_default,
                         help='Distribution')  # 分布图
     # 绘图参数
-    parser.add_argument('--annot', metavar='-Annot', type=bool, default=True, help='Annotation')  # 是否标注
+    # argumentParser() 存储bool类型有坑，不能直接传True/False，需要设置action
+    # python 终端读取时传入的都是string类型，转为bool型时，由于是非空字符串，所以（无论传入什么字符均）转为True
+    # 详情请参考：
+    # https://blog.csdn.net/qinduohao333/article/details/131305803
+    # https://blog.csdn.net/orangeOrangeRed/article/details/117624905?login=from_csdn
+    parser.add_argument('-AN', '--annot', action='store_true', help='Annotation on the heatmap')  # 是否标注
+    parser.add_argument('-CM', '--colormap', metavar='colormap', type=str, default='viridis', help='Colormap of the heatmap')  # 色图
+    parser.add_argument('-CM_source', '--colormap_source', metavar='colormap source', type=str, default='default', help='Source of the colormap')  # 色图来源
 
     # 图像保存参数
     # parser.add_argument('--format', metavar='-F', type=str or tuple, default='png', help='Figure format')  # 图像保存格式
-    parser.add_argument('--format', metavar='-F', type=tuple, default=('png','eps', 'pdf'), help='Figure format')  # 图像保存格式
+    parser.add_argument('-F', '--format', metavar='format', type=tuple, default=('png','eps', 'pdf'), help='Formats of the figures to be saved')  # 图像保存格式
 
     args = parser.parse_args()
 
@@ -93,7 +100,8 @@ if __name__ == '__main__':
 
     # 热度图
     for character in args.heatmap:
-        statistic.Heatmap(character=character, annot=args.annot)  # 画热度图
+        # 画热度图
+        statistic.Heatmap(character=character, annot=args.annot, colormap=args.colormap, colormap_source=args.colormap_source)
 
         if isinstance(args.format, str):  # 只指定了一个格式
             plt.savefig(f"{args.saving_directory}/{character}.{args.format}")  # 保存图像

@@ -11,6 +11,7 @@ from src.Electrica.KEITHLEY4200.KEITHLEY4200_Analysis_MemTFT import MemTransisto
 # 导入绘图模块
 import seaborn as sns
 import matplotlib.pyplot as plt
+from src.colors import iColormap
 
 class MemTransistorStatistics:
     '''
@@ -117,46 +118,56 @@ class MemTransistorStatistics:
     ####################################################################################################################
     # 以下是画图函数
 
-    def Heatmap(self, character: str, figsize: tuple[float,float]=(12,8), annot: bool=True) -> None:
+    def Heatmap(self, character: str, figsize: tuple[float,float]=(12,8), annot: bool=True,
+                colormap: str='coolwarm', colormap_source: str='default') -> None:
         '''
         热力图 （关于seaborn的设置，参考：https://blog.csdn.net/weixin_45492560/article/details/106227864）
         '''
+
+        # 画图参数设置
+        if colormap_source == 'custom':
+            colormap = iColormap[colormap]
+        elif colormap_source == 'default':
+            colormap = colormap
+        else:
+            raise ValueError('Invalid colormap source! Please select a valid colormap source parameter: "default" or "custom" ! ! !')
+
         plt.figure(figsize=figsize)  # 创建一个新的画布
 
         # 开关比 (ON-OFF ratio)
         if character == 'ON_OFF_ratio_forward':
             data = self.data_dict['on_off_ratio_map'][:,:,0]  # 提取实例变量字典中的数据
             # 关于倍频得讨论：https: // blog.csdn.net / cabbage2008 / article / details / 52043646
-            fig = sns.heatmap(20*np.log10(data), annot=annot, fmt='.1f', cmap='magma', vmin=0, vmax=100,
+            fig = sns.heatmap(20*np.log10(data), annot=annot, fmt='.1f', cmap=colormap, vmin=0, vmax=100,
                               cbar_kws={'label': r'$20 \cdot \log_{10}(<I_{on}>/<I_{off}>)$ (dB)'})
         elif character == 'ON_OFF_ratio_backward':
             data = self.data_dict['on_off_ratio_map'][:,:,1]
-            fig = sns.heatmap(20 * np.log10(data), annot=annot, fmt='.1f', cmap='magma', vmin=0, vmax=100,
+            fig = sns.heatmap(20 * np.log10(data), annot=annot, fmt='.1f', cmap=colormap, vmin=0, vmax=100,
                               cbar_kws={'label': r'$20 \cdot \log_{10}(<I_{on}>/<I_{off}>)$ (dB)'})
 
         # 极限开关比
         elif character == 'ON_OFF_ratio_extremum_forward':
             data = self.data_dict['on_off_ratio_extremum_map'][:,:,0]
-            fig = sns.heatmap(20 * np.log10(data), annot=annot, fmt='.1f', cmap='magma', vmin=0, vmax=120,
+            fig = sns.heatmap(20 * np.log10(data), annot=annot, fmt='.1f', cmap=colormap, vmin=0, vmax=120,
                               cbar_kws={'label': r'$20 \cdot \log_{10}(I_{max}/I_{min})$ (dB)'})
         elif character == 'ON_OFF_ratio_extremum_backward':
             data = self.data_dict['on_off_ratio_extremum_map'][:,:,1]
-            fig = sns.heatmap(20 * np.log10(data), annot=annot, fmt='.1f', cmap='magma', vmin=0, vmax=120,
+            fig = sns.heatmap(20 * np.log10(data), annot=annot, fmt='.1f', cmap=colormap, vmin=0, vmax=120,
                               cbar_kws={'label': r'$20 \cdot \log_{10}(I_{max}/I_{min})$ (dB)'})
 
         elif character == 'memory_window':
             data = self.data_dict['MemWindow_map']*self.voltage_scaling
-            fig = sns.heatmap(data, annot=annot, fmt='.1f', cmap='coolwarm',
+            fig = sns.heatmap(data, annot=annot, fmt='.1f', cmap=colormap,
                               cbar_kws={'label': f"Memory Window ({self.voltage_unit})"})
 
         # 亚阈值摆幅（Subthreshold Swing）
         elif character == 'SS_forward':  # 正向扫描
             data = self.data_dict['SS_map'][:,:,0]*self.voltage_scaling
-            fig = sns.heatmap(data, annot=annot, fmt='.0f', cmap='coolwarm', # vmin=0, vmax=2000,
+            fig = sns.heatmap(data, annot=annot, fmt='.0f', cmap=colormap, # vmin=0, vmax=2000,
                               cbar_kws={'label': f"Subthreshold Swing ({self.voltage_unit}/decade)"})
         elif character == 'SS_backward':  # 反向扫描
             data = self.data_dict['SS_map'][:,:,1]*self.voltage_scaling
-            fig = sns.heatmap(data, annot=annot, fmt='.0f', cmap='coolwarm', # vmin=0, vmax=2000,
+            fig = sns.heatmap(data, annot=annot, fmt='.0f', cmap=colormap, # vmin=0, vmax=2000,
                               cbar_kws={'label': f"Subthreshold Swing ({self.voltage_unit}/decade)"})
 
         else:
