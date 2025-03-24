@@ -6,4 +6,4 @@ from . import Electrica as Electrica  # Package handling data in the field of el
 
 from . import Quantus as Quantus  # Package handling quantum mechanics
 
-from . import colors as colors  # Package handling colors
+from .Visual import colors as colors

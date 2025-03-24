@@ -17,7 +17,7 @@ working_loc = 'Lingjiang'             # 默认工作地点
 data_dir_dict = {'Macbook': '/Users/liusongwei/Desktop/SolutionIC_Temporary/Data/RO',
                  'MMW405': 'E:/Projects/Jingfang Pei/Solution-processed IC/Temporary_working_dir/RO/20240711',
                  'JCPGH1': 'D:/Projects/Jingfang Pei/Solution-processed IC/Data/4200/20240923 tft 20x20 array glass substrate',
-                 'Lingjiang': 'E:/PhD_research/Jingfang Pei/Solution-processed IC/Data/KEITHLEY4200/20250323 sol ic 5x20_preview/1_to_20'}  # Not yet ready
+                 'Lingjiang': 'E:/PhD_research/Jingfang Pei/Solution-processed IC/Data/KEITHLEY4200/20250323 sol ic 5x20_preview/1_to_10_then_11_to_20_separated'}  # Not yet ready
 
 # 默认的数据保存目录字典
 saving_dir_dict = {'MMW405': 'E:/Projects/Jingfang Pei/Solution-processed IC/Temporary_working_dir/RO/20240711',
@@ -36,15 +36,15 @@ def InitializeParser() -> argparse.Namespace:
     parser.add_argument('--saving_directory', metavar='-S', type=str, default=saving_dir_dict[working_loc], help='Saving directory')  # 分析结果保存文件夹
 
     # 基础设置
-    parser.add_argument('--voltage_unit', metavar='-V', type=str, default='mV', help='Voltage unit')  # 电压单位
+    parser.add_argument('--voltage_unit', metavar='-V', type=str, default='V', help='Voltage unit')  # 电压单位
     parser.add_argument('--current_unit', metavar='-I', type=str, default='A', help='Current unit')  # 电流单位
 
     # 统计分析参数
     parser.add_argument('--mode', metavar='-M', type=str, default='auto', help='Analysis mode')  # 分析模式
-    parser.add_argument('--ON_range', metavar='-ON', type=tuple, default=(-0.5, 0.4), help='ON range')  # ON范围
-    parser.add_argument('--OFF_range', metavar='-OFF', type=tuple, default=(0.9, 1.0), help='OFF range')  # OFF范围
-    parser.add_argument('--SS_range', metavar='-SS', type=tuple, default=(0.25, 0.3), help='SS range')  # SS范围
-    parser.add_argument('--Vth_location', metavar='-Vth', type=tuple, default=(0.2, 0.6), help='Vth location')  # 阈值电压位置
+    parser.add_argument('--ON_range', metavar='-ON', type=tuple, default=(-0.5, -0.4), help='ON range')  # ON范围
+    parser.add_argument('--OFF_range', metavar='-OFF', type=tuple, default=(1.3, 1.5), help='OFF range')  # OFF范围
+    parser.add_argument('--SS_range', metavar='-SS', type=tuple, default=(0.3, 0.5), help='SS range')  # SS范围
+    parser.add_argument('--Vth_location', metavar='-Vth', type=tuple, default=(0.25, 1.25), help='Vth location')  # 阈值电压位置
 
     # 分析指标设置
     parser.add_argument('--heatmap', metavar='-H', type=tuple, nargs='+',
@@ -52,34 +52,47 @@ def InitializeParser() -> argparse.Namespace:
     parser.add_argument('--distribution', metavar='-D', type=tuple, nargs='+', default=('Igs', 'Vth'),
                         help='Distribution')  # 分布图
 
-    # 图像保存参数
+    # 绘图参数
+    # argumentParser() 存储bool类型有坑，不能直接传True/False，需要设置action
+    # python 终端读取时传入的都是string类型，转为bool型时，由于是非空字符串，所以（无论传入什么字符均）转为True
+    # 详情请参考：
+    # https://blog.csdn.net/qinduohao333/article/details/131305803
+    # https://blog.csdn.net/orangeOrangeRed/article/details/117624905?login=from_csdn
+    parser.add_argument('-AN', '--annot', action='store_true', help='Annotation on the heatmap')  # 是否标注
+    parser.add_argument('--Leakage_plotting_range', metavar='-:PR', type=tuple, default=(1e-12, 1e-7), help='Igs plotting range')  # 漏电流绘图范围
+    parser.add_argument('--Vth_plotting_range', metavar='-VPR', type=tuple, default=(-0.5, 1.5), help='Vth plotting range')  # Vth绘图范围
     parser.add_argument('--format', metavar='-F', type=str or tuple, default='png', help='Figure format')  # 图像保存格式
 
 
     # 以下增加几个指标
     parser.add_argument('--Igs', metavar='-Igs', type=tuple, default=(-0.5, 0.5), help='Igs range')  # Igs范围
 
+
     args = parser.parse_args()
 
     return args
 
 if __name__ == '__main__':
+    print('Start analysis workflow ...')
+
     args = InitializeParser()  # 初始化命令行解析器
+
+    print('Parser initialized ...')
 
     # 创建统计器件特性对象
     statistic = Electrica.KEITHLEY4200.Statistics_Transistor(data_directory=args.data_directory, voltage_unit=args.voltage_unit,
                                                              current_unit=args.current_unit)
 
-    print(args.mode)
-
     # 统计器件特性
     statistic.Analysis(mode=args.mode, ON_range=args.ON_range, OFF_range=args.OFF_range, SS_range=args.SS_range,
                        Vth_location=args.Vth_location)
-    print(2)
+
+    print('Device characteristics analysis completed. Starting to plot results ...')
 
     # 热度图
     for character in args.heatmap:
-        statistic.Heatmap(character=character)  # 画热度图
+        # statistic.Heatmap(character=character, annot=args.annot)  # 画热度图
+        statistic.Heatmap(character=character, annot=False)  # 画热度图(debug版本)
 
         if isinstance(args.format, str):  # 只指定了一个格式
             plt.savefig(f"{args.saving_directory}/{character}.{args.format}")  # 保存图像
@@ -92,7 +105,11 @@ if __name__ == '__main__':
 
     # 分布图
     for character in args.distribution:
-        statistic.Distribution(character=character)  # 画分布图
+
+        if character == 'Igs':
+            statistic.Distribution(character=character, plotting_range=args.Leakage_plotting_range)  # 画漏电流分布图
+        elif character == 'Vth':
+            statistic.Distribution(character=character, plotting_range=args.Vth_plotting_range)  # 画阈值电压分布图
 
         if isinstance(args.format, str):
             plt.savefig(f"{args.saving_directory}/{character}.{args.format}")
@@ -103,4 +120,4 @@ if __name__ == '__main__':
 
         plt.close()  # 关闭图像
 
-    print('Analysis completed!')
+    print('Analysis workflow completed!')

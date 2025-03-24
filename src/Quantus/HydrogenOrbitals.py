@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.colors as mcolors
 from scipy.special import sph_harm, genlaguerre
-from src.colors import iColormap
+from src.Visual.colors import iColormap
 
 def Hydrogen_Wavefunction(n, l, m, X, Y, Z):
     ''' Calculate the hydrogen atom wave function '''

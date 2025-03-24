@@ -8,7 +8,7 @@ from src.Electrica.KEITHLEY4200.KEITHLEY4200_GetData import GetData_KEITHLEY4200
 abbrev_dict = {'t': 'Time', 'Gm': 'GM',
                'V_g': 'GateV', 'V_d': 'DrainV', 'V_s': 'SourceV', 'I_g': 'GateI', 'I_d': 'DrainI', 'I_s': 'SourceI'}
 
-class TransistorCharacteristics:
+class Characteristics_Transistors:
     '''
     此函数类专用于分析晶体管特性
     '''
@@ -73,8 +73,10 @@ class TransistorCharacteristics:
         '''
         极限开关比
         '''
-        on_off_ratio_Id = np.max(self.I_d)/np.min(self.I_d)  # 用Id计算开关比
-        on_off_ratio_Is = np.max(self.I_s)/np.min(self.I_s)  # 用Is计算开关比
+        I_d, I_s = np.abs(self.I_d), np.abs(self.I_s)  #由于机器在电流极小时会出现负值，所以取绝对值
+
+        on_off_ratio_Id = np.max(I_d)/np.min(I_d)  # 用Id计算开关比
+        on_off_ratio_Is = np.max(I_s)/np.min(I_s)  # 用Is计算开关比
         return np.max([on_off_ratio_Id,on_off_ratio_Is])  # 计算开关比
 
     def OnOffRatio(self, on_region: tuple=None, off_region: tuple=None):
@@ -82,14 +84,14 @@ class TransistorCharacteristics:
         计算正常的开关比
         '''
 
-        Vgs, Ids = self.V_g, self.I_ds  # 获取Vgs和Ids数据
+        Vgs, Ids = self.V_g, self.I_ds   # 获取Vgs和Ids数据
 
-        on_start, on_end = on_region  # 开启区间
+        on_start, on_end = on_region     # 开启区间
         off_start, off_end = off_region  # 关断区间
 
-        Ids_on = Ids[np.logical_and(Vgs >= on_start, Vgs <= on_end)]  # 获取开启区间的Ids数据
+        Ids_on = Ids[np.logical_and(Vgs >= on_start, Vgs <= on_end)]     # 获取开启区间的Ids数据
         Ids_off = Ids[np.logical_and(Vgs >= off_start, Vgs <= off_end)]  # 获取关断区间的Ids数据
-        on_off_ratio = np.mean(Ids_on)/np.mean(Ids_off)  # 计算开关比
+        on_off_ratio = np.mean(np.abs(Ids_on))/np.mean(np.abs(Ids_off))  # 计算开关比（由于机器在电流极小时会出现负值，所以取绝对值）
 
         return on_off_ratio
 
@@ -142,7 +144,7 @@ class TransistorCharacteristics:
         计算亚阈值摆幅，详见：https://en.wikipedia.org/wiki/Subthreshold_swing
         公式参考：chrome-extension://oemmndcbldboiebfnladdacbdfmadadm/https://hal.science/hal-03368147/document
         '''
-        Ids_log = np.log10(self.I_ds)  # 对Ids取对数
+        Ids_log = np.log10(np.abs(self.I_ds))  # 对Ids取对数（由于机器在电流极小时会出现负值，所以取绝对值）
         Vgs = self.V_g  # Gate-source电压
 
         # 选定评估范围内计算SS

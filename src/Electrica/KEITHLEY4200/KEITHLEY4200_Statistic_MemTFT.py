@@ -1,7 +1,6 @@
 import os
 import numpy as np
 import pandas as pd
-from scipy.ndimage import label
 
 # 导入数据读取模块
 from src.Electrica.KEITHLEY4200.KEITHLEY4200_GetData import GetData_KEITHLEY4200A_SCS
@@ -11,7 +10,7 @@ from src.Electrica.KEITHLEY4200.KEITHLEY4200_Analysis_MemTFT import MemTransisto
 # 导入绘图模块
 import seaborn as sns
 import matplotlib.pyplot as plt
-from src.colors import iColormap
+from src.Visual.colors import iColormap
 
 class MemTransistorStatistics:
     '''

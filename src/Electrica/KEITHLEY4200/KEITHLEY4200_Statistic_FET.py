@@ -1,24 +1,15 @@
 import os
 import numpy as np
 from src.Electrica.KEITHLEY4200.KEITHLEY4200_GetData import GetData_KEITHLEY4200A_SCS  # 数据读取模块
-from src.Electrica.KEITHLEY4200.KEITHLEY4200_Analysis_FET import TransistorCharacteristics     # 数据分析模块
+from src.Electrica.KEITHLEY4200.KEITHLEY4200_Analysis_FET import Characteristics_Transistors     # 数据分析模块
 
 import seaborn as sns
 import matplotlib.pyplot as plt
 
-# 通过定义一个字典，方便地将缩写转换为全称
-# abbrev_dict = {'t': 'Time', 'Gm': 'GM',
-               # 'V_g': 'GateV', 'V_d': 'DrainV', 'V_s': 'SourceV', 'I_g': 'GateI', 'I_d': 'DrainI', 'I_s': 'SourceI'}
-
 class Statistics_Transistor:
-    '''
-    此类专用于统计器件特性
-    '''
-
+    ''' 此类专用于统计器件特性 '''
     def __init__(self, data_directory: str, voltage_unit: str='V', current_unit: str='A'):
-        '''
-        初始化函数类
-        '''
+        ''' 初始化函数类 '''
 
         self.data_directory = data_directory  # 数据文件夹
 
@@ -38,8 +29,6 @@ class Statistics_Transistor:
         分析函数
         '''
 
-        print(1)
-
         if mode == 'auto':  # 自动模式: 在这个模式下，不需要指定文件名，只需要指定文件夹，程序会自动读取文件夹下的所有文件中的数据
             file_list = os.listdir(self.data_directory)
             num_files = len(file_list)  # 计算数据文件的数量
@@ -57,7 +46,7 @@ class Statistics_Transistor:
                 data = GetData_KEITHLEY4200A_SCS(data_file=f"{self.data_directory}/{file_list[i]}")
 
                 for j in range(num_cycles):
-                    transistor = TransistorCharacteristics(data=data[j])  # 创建一个晶体管特性对象
+                    transistor = Characteristics_Transistors(data=data[j])  # 创建一个晶体管特性对象
                     Vgs, Id, Is, Ig = transistor.TransferCurve()  # 获取传输曲线
                     on_off_ratio = transistor.OnOffRatio(ON_range, OFF_range)  # 计算开关比
                     on_off_ratio_extreme = transistor.OnOffRatio_Extreme()  # 计算开关比（极端值）
@@ -90,7 +79,7 @@ class Statistics_Transistor:
     ####################################################################################################################
     # 以下是画图函数
 
-    def Heatmap(self, character: str) -> None:
+    def Heatmap(self, character: str, annot: bool=True) -> None:
         '''
         热力图 （关于seaborn的设置，参考：https://blog.csdn.net/weixin_45492560/article/details/106227864）
         '''
@@ -100,28 +89,24 @@ class Statistics_Transistor:
         if character == 'ON_OFF_ratio':
             data = self.data_dict['on_off_ratio_map']  # 提取实例变量字典中的数据
             # 关于倍频得讨论：https: // blog.csdn.net / cabbage2008 / article / details / 52043646
-            fig = sns.heatmap(20*np.log10(data), annot=True, fmt='.1f', cmap='magma', vmin=0, vmax=100,
+            fig = sns.heatmap(20*np.log10(data), annot=annot, fmt='.1f', cmap='magma', vmin=0, vmax=100,
                               cbar_kws={'label': r'$20 \cdot \log_{10}(<I_{on}>/<I_{off}>)$ (dB)'})
 
         # 极限开关比
         elif character == 'ON_OFF_ratio_extreme':
             data = self.data_dict['on_off_ratio_extreme_map']
-            fig = sns.heatmap(20 * np.log10(data), annot=True, fmt='.1f', cmap='magma', vmin=0, vmax=100,
+            fig = sns.heatmap(20 * np.log10(data), annot=annot, fmt='.1f', cmap='magma', vmin=0, vmax=100,
                               cbar_kws={'label': r'$20 \cdot \log_{10}(<I_{on}>/<I_{off}>)$ (dB)'})
 
         # 亚阈值摆幅（Subthreshold Swing）
         elif character == 'SS':
             data = self.data_dict['SS_map']*self.voltage_scaling
-            fig = sns.heatmap(data, annot=True, fmt='.0f', cmap='coolwarm',
+            fig = sns.heatmap(data, annot=annot, fmt='.0f', cmap='coolwarm', vmin=0, vmax=1000,
                               cbar_kws={'label': f"Subthreshold Swing ({self.voltage_unit}/decade)"})
+            # 记得要修改画图范围
+
         else:
             raise ValueError('Invalid character! Please select a valid character parameter ! ! !')
-
-        # sns.heatmap(np.log10(on_off_ratio_extreme_map), annot=True, fmt='.1f', cmap='coolwarm', cbar_kws={'label': 'On-Off Ratio'})
-        # sns.heatmap(leakage_avg_map)
-        # sns.heatmap(SS_map*1e3, annot=True, fmt='.0f', cmap='coolwarm', cbar_kws={'label': 'Subthreshold Swing (mV/decade)'})
-        # plt.savefig('./data/46/seaborn_heatmap_list.png')
-        # plt.close('all')
 
         # 各种画图设置
         xtick = np.arange(1, self.data_dict['num_cycles']+1, 1)  # 生成x轴刻度（从1开始）
@@ -130,15 +115,9 @@ class Statistics_Transistor:
 
         plt.tight_layout()  # 调整布局
 
-        # cbar = fig.collections[0].colorbar  # 设置colorbar
-
-        # fig.set_xlabel('Cycle')
-        # fig.set_ylabel('File')
-        # fig.set_xticklabels('On-Off Ratio')
-
         return
 
-    def Distribution(self, character: str) -> None:
+    def Distribution(self, character: str, plotting_range: tuple[float,float]) -> None:
         '''
         统计分布图
         '''
@@ -148,20 +127,16 @@ class Statistics_Transistor:
         if character == 'Igs':
             data = self.data_dict['leakage_avg_map'].flatten()*self.current_scaling  # 将二维数组展平为一维数组，然后缩放数据
             fig = sns.displot(data, kde=True, bins=100, color='red', rug=True, log_scale=10)
-            fig.set(xlabel='Leakage current $I_{gs}$ ('+self.current_unit+')', xlim=(1e-12, 5e-8))
+            fig.set(xlabel='Leakage current $I_{gs}$ ('+self.current_unit+')', xlim=plotting_range)
 
         # 阈值电压 (Threshold voltage)
         elif character == 'Vth':
             data = self.data_dict['Vth_map'].flatten()*self.voltage_scaling  # 将二维数组展平为一维数组，然后缩放数据
             fig = sns.displot(data, kde=True, bins=20, color='blue', rug=True)
-            fig.set(xlabel = 'Threshold voltage $V_{th}$ ('+self.voltage_unit+')', xlim = (100, 800))
+            fig.set(xlabel = 'Threshold voltage $V_{th}$ ('+self.voltage_unit+')', xlim=plotting_range)
 
         else:
             raise ValueError('Invalid character! Please select a valid character parameter ! ! !')
-
-        # sns.displot(leakage_avg*scaling_factor, kde=True, bins=20, color='blue', rug=True)
-        # sns.displot(data=leakage_avg, x="bill_length_mm", kind='kde')
-        # sns.displot(data=leakage_avg, x="bill_length_mm", kind='ecdf')
 
         plt.tight_layout()  # 调整布局
 

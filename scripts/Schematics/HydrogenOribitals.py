@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.colors as mcolors
 from src import Quantus
-from src.colors import iColormap
+from src.Visual.colors import iColormap
 
 # 量子数列表
 orbital_list = [(1,0,0),
