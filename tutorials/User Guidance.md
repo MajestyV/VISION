@@ -85,8 +85,8 @@ i. Conventional transistors
 ii. Memristive transistors
 
 ```shell
-$ python MemTransistorStatistic.py -h
-usage: MemTransistorStatistic.py [-h] [--data_directory -P] [--saving_directory -S] [--voltage_unit -V]
+$ python Statistics_MemTransistor.py -h
+usage: Statistics_MemTransistor.py [-h] [--data_directory -P] [--saving_directory -S] [--voltage_unit -V]
                                  [--current_unit -I] [--mode -M] [--channel_type -C] [--analysis_subject -A]
                                  [--ON_range -ON] [--OFF_range -OFF] [--V_FullWidth -V_FullWidth]
                                  [--window_size -W] [--boundary_cond -B] [--Vth_eval_range -Vth]
@@ -135,7 +135,7 @@ Below is an example command:
 # -V_unit: Voltage unit, -I_unit: Current unit
 # -AN: Annotation on the heatmap (如果不想在热力图里标出每个点的具体数值，只需要把`-AN`去掉即可)
 # -CM: 给出色条的名称, -CM_source: 给出色条的来源, 自定义的输入custom, matplotlib自带的的输入default
-$ python MemTransistorStatistic.py -V_unit V -I_unit A -AN -CM Blue_n_Red -CM_source custom
+$ python Statistics_MemTransistor.py -V_unit V -I_unit A -AN -CM Blue_n_Red -CM_source custom
 ```
 
 值得注意的是，有时候不同的指标会用不一样的单位，比如Vth用V，而SS用mV/dec。这时候，我们可以通过`-V_unit`和`-I_unit`来指定不同的单位，然后多跑两次就行。
