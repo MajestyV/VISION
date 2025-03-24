@@ -2,7 +2,7 @@
 
 import pandas as pd
 
-def GetData_KEITHLEY4200_OldModel(data_file: str, sheets_ignored: list=('Calc', 'Settings')):
+def GetData_KEITHLEY4200A_SCS(data_file: str, sheets_ignored: list=('Calc', 'Settings')):
     '''
     从KEITHLEY4200旧型号中获取数据
     '''

@@ -1,6 +1,6 @@
 import os
 import numpy as np
-from src.Electrica.KEITHLEY4200.KEITHLEY4200_GetData import GetData_KEITHLEY4200_OldModel  # 数据读取模块
+from src.Electrica.KEITHLEY4200.KEITHLEY4200_GetData import GetData_KEITHLEY4200A_SCS  # 数据读取模块
 from src.Electrica.KEITHLEY4200.KEITHLEY4200_Analysis_FET import TransistorCharacteristics     # 数据分析模块
 
 import seaborn as sns
@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 # abbrev_dict = {'t': 'Time', 'Gm': 'GM',
                # 'V_g': 'GateV', 'V_d': 'DrainV', 'V_s': 'SourceV', 'I_g': 'GateI', 'I_d': 'DrainI', 'I_s': 'SourceI'}
 
-class DeviceStatistics:
+class Statistics_Transistor:
     '''
     此类专用于统计器件特性
     '''
@@ -38,10 +38,12 @@ class DeviceStatistics:
         分析函数
         '''
 
+        print(1)
+
         if mode == 'auto':  # 自动模式: 在这个模式下，不需要指定文件名，只需要指定文件夹，程序会自动读取文件夹下的所有文件中的数据
             file_list = os.listdir(self.data_directory)
             num_files = len(file_list)  # 计算数据文件的数量
-            example_data = GetData_KEITHLEY4200_OldModel(data_file=f"{self.data_directory}/{file_list[0]}")
+            example_data = GetData_KEITHLEY4200A_SCS(data_file=f"{self.data_directory}/{file_list[0]}")
             num_cycles = len(example_data)  # 计算测试循环次数，即数据列表的长度
 
             # 创建一系列全零数组，用于存储数据
@@ -52,16 +54,16 @@ class DeviceStatistics:
             Vth_map = np.zeros((num_files, num_cycles), dtype=float)  # 阈值电压
 
             for i in range(num_files):
-                data = GetData_KEITHLEY4200_OldModel(data_file=f"{self.data_directory}/{file_list[i]}")
+                data = GetData_KEITHLEY4200A_SCS(data_file=f"{self.data_directory}/{file_list[i]}")
 
                 for j in range(num_cycles):
                     transistor = TransistorCharacteristics(data=data[j])  # 创建一个晶体管特性对象
                     Vgs, Id, Is, Ig = transistor.TransferCurve()  # 获取传输曲线
                     on_off_ratio = transistor.OnOffRatio(ON_range, OFF_range)  # 计算开关比
                     on_off_ratio_extreme = transistor.OnOffRatio_Extreme()  # 计算开关比（极端值）
-                    SS = transistor.SubthresholdSwing(SS_range)  # 计算亚阈值摆幅
+                    SS = transistor.SubthresholdSwing(evaluation_range=SS_range)  # 计算亚阈值摆幅
                     leakage_avg = transistor.LeakageCurrent()  # 计算平均漏电流
-                    Vth, dI_dV, d2I_dV2 = transistor.ThresholdVoltage(Vth_location)  # 计算阈值电压
+                    Vth, dI_dV, d2I_dV2 = transistor.ThresholdVoltage(Vth_location=Vth_location)  # 计算阈值电压
 
                     # 存储数据
                     SS_map[i, j] = SS  # 亚阈值摆幅

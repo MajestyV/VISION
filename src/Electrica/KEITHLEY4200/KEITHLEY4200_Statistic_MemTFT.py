@@ -4,7 +4,7 @@ import pandas as pd
 from scipy.ndimage import label
 
 # 导入数据读取模块
-from src.Electrica.KEITHLEY4200.KEITHLEY4200_GetData import GetData_KEITHLEY4200_OldModel
+from src.Electrica.KEITHLEY4200.KEITHLEY4200_GetData import GetData_KEITHLEY4200A_SCS
 # 从KEITHLEY4200数据中提取忆阻晶体管特性的函数
 from src.Electrica.KEITHLEY4200.KEITHLEY4200_Analysis_MemTFT import MemTransistorCharacteristics
 
@@ -46,7 +46,7 @@ class MemTransistorStatistics:
         if mode == 'auto':  # 自动模式: 在这个模式下，不需要指定文件名，只需要指定文件夹，程序会自动读取文件夹下的所有文件中的数据
             file_list = os.listdir(self.data_directory)
             num_files = len(file_list)  # 计算数据文件的数量
-            example_data = GetData_KEITHLEY4200_OldModel(data_file=f"{self.data_directory}/{file_list[0]}")
+            example_data = GetData_KEITHLEY4200A_SCS(data_file=f"{self.data_directory}/{file_list[0]}")
             num_cycles = len(example_data)  # 计算测试循环次数，即数据列表的长度
 
             # 创建一系列全零数组，用于存储数据
@@ -59,7 +59,7 @@ class MemTransistorStatistics:
             V_swing_map = np.zeros((num_files, num_cycles, 2), dtype=float)  # 摆幅电压
 
             for i in range(num_files):
-                data = GetData_KEITHLEY4200_OldModel(data_file=f"{self.data_directory}/{file_list[i]}")
+                data = GetData_KEITHLEY4200A_SCS(data_file=f"{self.data_directory}/{file_list[i]}")
                 print(f"File {file_list[i]} is processing ...")
 
                 for j in range(num_cycles):

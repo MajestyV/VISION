@@ -3,7 +3,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-from src.Electrica.KEITHLEY4200.KEITHLEY4200_GetData import GetData_KEITHLEY4200_OldModel  # 数据读取函数
+from src.Electrica.KEITHLEY4200.KEITHLEY4200_GetData import GetData_KEITHLEY4200A_SCS  # 数据读取函数
 
 # 通过定义一个字典，方便地将缩写转换为全称
 abbrev_dict = {'t': 'Time', 'Gm': 'GM',
@@ -206,7 +206,7 @@ if __name__ == '__main__':
     data_file = 'line_11#1_to_20.xls'
 
     # 获取数据
-    data = GetData_KEITHLEY4200_OldModel(f'{data_directory}/{data_file}')
+    data = GetData_KEITHLEY4200A_SCS(f'{data_directory}/{data_file}')
 
     example_data = data[6]  # 选择第一个数据作为测试对象
 

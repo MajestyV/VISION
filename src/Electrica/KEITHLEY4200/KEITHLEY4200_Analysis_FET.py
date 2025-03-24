@@ -2,7 +2,7 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
-from src.Electrica.KEITHLEY4200.KEITHLEY4200_GetData import GetData_KEITHLEY4200_OldModel  # 数据读取函数
+from src.Electrica.KEITHLEY4200.KEITHLEY4200_GetData import GetData_KEITHLEY4200A_SCS  # 数据读取函数
 
 # 通过定义一个字典，方便地将缩写转换为全称
 abbrev_dict = {'t': 'Time', 'Gm': 'GM',
@@ -12,7 +12,7 @@ class TransistorCharacteristics:
     '''
     此函数类专用于分析晶体管特性
     '''
-    def __init__(self, data: dict, channel_type: str='P', sweep_mode: str='DualSweep', analysis_subject: str='I_source',
+    def __init__(self, data: dict, channel_type: str='P', sweep_mode: str='DualSweep', analysis_subject: str='I_drain',
                  characteristic: str='Transfer', **kwargs):
         '''
         初始化函数
@@ -93,8 +93,8 @@ class TransistorCharacteristics:
 
         return on_off_ratio
 
-    def ThresholdVoltage(self, mode: str='auto', window_size: int=10, boundary_cond: str='same',
-                         evaluation_range: tuple=None):
+    def ThresholdVoltage(self, Vth_location: tuple=None, window_size: int=10, boundary_cond: str='same',
+                         mode: str='auto') -> tuple:
         '''
         计算阈值电压（通常将传输特性曲线中输出电压随输入电压改变而急剧变化转折区的中点对应的输入电压称为阈值电压）
         '''
@@ -123,8 +123,8 @@ class TransistorCharacteristics:
             d2I_dV2 = np.gradient(dI_dV, Vgs)  # 计算dI_dV对Vgs的导数
 
             # 选定评估范围内计算阈值电压
-            if evaluation_range is not None:
-                Vgs_start, Vgs_end = evaluation_range  # 获取评估范围
+            if Vth_location is not None:
+                Vgs_start, Vgs_end = Vth_location  # 获取评估范围
             else:
                 Vgs_start, Vgs_end = (Vgs[0], Vgs[-1])  # 默认评估范围为整个数据范围
 
@@ -137,9 +137,7 @@ class TransistorCharacteristics:
         else:
             raise ValueError('Invalid mode, please choose from "auto" or "manual"')
 
-
-
-    def SubthresholdSwing(self, mode: str='auto', Vth_neighbor: float=0.2, evaluation_range: tuple=None):
+    def SubthresholdSwing(self, evaluation_range: tuple=None, Vth_neighbor: float=0.2, **kwargs):
         '''
         计算亚阈值摆幅，详见：https://en.wikipedia.org/wiki/Subthreshold_swing
         公式参考：chrome-extension://oemmndcbldboiebfnladdacbdfmadadm/https://hal.science/hal-03368147/document
@@ -148,15 +146,15 @@ class TransistorCharacteristics:
         Vgs = self.V_g  # Gate-source电压
 
         # 选定评估范围内计算SS
-        if mode == 'auto':
-            Vth = self.ThresholdVoltage()[0]  # 获取阈值电压
-            Vgs_start, Vgs_end = (Vth-Vth_neighbor, Vth+Vth_neighbor)  # 评估阈值电压附近的数据
-        elif (mode == 'manual') and (evaluation_range is not None):
-            Vgs_start, Vgs_end = evaluation_range  # 获取评估范围
-        elif (mode == 'manual') and (evaluation_range is None):
-            Vgs_start, Vgs_end = (Vgs[0], Vgs[-1])  # 默认评估范围为整个数据范围
+        if evaluation_range is not None:                        # 手动模式 - 指定SS的评估范围
+            Vgs_start, Vgs_end = evaluation_range
+        elif 'mode' in kwargs and kwargs['mode'] == 'default':  # 默认模式 - 默认评估整个数据范围
+            Vgs_start, Vgs_end = (Vgs[0], Vgs[-1])
+        elif 'mode' in kwargs and kwargs['mode'] == 'auto':     # 自动模式 - 自动获取阈值电压并根据阈值电压指定评估范围
+            Vth = self.ThresholdVoltage()[0]                               # 获取阈值电压
+            Vgs_start, Vgs_end = (Vth - Vth_neighbor, Vth + Vth_neighbor)  # 评估阈值电压附近的数据
         else:
-            raise ValueError('Invalid mode, please choose from "auto" or "manual"')
+            raise ValueError('Invalid mode, please choose from "auto" or "default"')
 
         index_selected = np.where(np.logical_and(Vgs >= Vgs_start, Vgs <= Vgs_end))  # 获取评估范围内的数据索引
         Vgs_selected = Vgs[index_selected]  # 获取评估范围内的Vgs数据
@@ -182,7 +180,7 @@ if __name__ == '__main__':
     data_file = 'line_1.xls'
 
     # 获取数据
-    data = GetData_KEITHLEY4200_OldModel(f'{data_directory}/{data_file}')
+    data = GetData_KEITHLEY4200A_SCS(f'{data_directory}/{data_file}')
 
     example_data = data[0]
 
