@@ -25,11 +25,9 @@ saving_dir_dict = {'MMW405': 'E:/Projects/Jingfang Pei/CNT-ASIC (CASIC)/Exp data
                    'Lingjiang': 'E:/PhD_research/Jingfang Pei/CNT-ASIC (CASIC)/Exp data/Working_dir'}
 
 def InitializeParser() -> argparse.Namespace:
-    '''
-    初始化命令行解析器, 并返回解析器对象
-    '''
-    # 加载命令行解析器
-    parser = argparse.ArgumentParser()
+    ''' 初始化命令行解析器, 并返回解析器对象 '''
+
+    parser = argparse.ArgumentParser()  # 加载命令行解析器
 
     # 数据文件路径以及分析结果保存路径
     parser.add_argument('--data_directory', metavar='-P', type=str, default=data_dir_dict[working_loc], help='Data directory')  # 数据文件夹

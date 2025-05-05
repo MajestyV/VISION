@@ -5,8 +5,6 @@ import sys
 project_path = os.path.abspath(os.path.join(os.path.join(os.getcwd(), '..'), '..'))  # 项目根目录
 sys.path.append(project_path)  # 添加路径到系统路径中
 
-print(project_path)
-
 import argparse
 from src import Electrica
 import matplotlib.pyplot as plt
@@ -36,7 +34,7 @@ def InitializeParser() -> argparse.Namespace:
     parser.add_argument('--saving_directory', metavar='-S', type=str, default=saving_dir_dict[working_loc], help='Saving directory')  # 分析结果保存文件夹
 
     # 基础设置
-    parser.add_argument('--voltage_unit', metavar='-V', type=str, default='V', help='Voltage unit')  # 电压单位
+    parser.add_argument('--voltage_unit', metavar='-V', type=str, default='mV', help='Voltage unit')  # 电压单位
     parser.add_argument('--current_unit', metavar='-I', type=str, default='A', help='Current unit')  # 电流单位
 
     # 统计分析参数
@@ -61,7 +59,7 @@ def InitializeParser() -> argparse.Namespace:
     parser.add_argument('-AN', '--annot', action='store_true', help='Annotation on the heatmap')  # 是否标注
     parser.add_argument('--Leakage_plotting_range', metavar='-:PR', type=tuple, default=(1e-12, 1e-7), help='Igs plotting range')  # 漏电流绘图范围
     parser.add_argument('--Vth_plotting_range', metavar='-VPR', type=tuple, default=(-0.5, 1.5), help='Vth plotting range')  # Vth绘图范围
-    parser.add_argument('--format', metavar='-F', type=str or tuple, default='png', help='Figure format')  # 图像保存格式
+    parser.add_argument('--format', metavar='-F', type=str or tuple, default=('png', 'eps', 'pdf'), help='Figure format')  # 图像保存格式
 
 
     # 以下增加几个指标
@@ -99,7 +97,7 @@ if __name__ == '__main__':
 
         elif isinstance(args.format, tuple):  # 指定了多个格式
             for fmt in args.format:
-                plt.savefig(f"{args.saving_directory}/{character}.{args.format}")
+                plt.savefig(f"{args.saving_directory}/{character}.{fmt}")
 
         plt.close()  # 关闭图像
 
@@ -116,7 +114,7 @@ if __name__ == '__main__':
 
         elif isinstance(args.format, tuple):
             for fmt in args.format:
-                plt.savefig(f"{args.saving_directory}/{character}.{args.format}")
+                plt.savefig(f"{args.saving_directory}/{character}.{fmt}")
 
         plt.close()  # 关闭图像
 
