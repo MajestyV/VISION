@@ -9,20 +9,22 @@ import argparse
 from src import Electrica
 import matplotlib.pyplot as plt
 
-working_loc = 'Lingjiang'             # 默认工作地点
+working_loc = 'CentraHorizon'             # 默认工作地点
 
 # 默认的数据文件目录字典
 data_dir_dict = {'Macbook': '/Users/liusongwei/Desktop/SolutionIC_Temporary/Data/RO',
                  'MMW405': 'E:/Projects/Jingfang Pei/CNT-ASIC (CASIC)/Exp data/20241004 tft hfo2 40x25',
                  'JCPGH1': 'D:/Projects/Jingfang Pei/Solution-processed IC/Data/4200/20240923 tft 20x20 array glass substrate',
                  'JinDiMingJin': 'E:/Projects/Jingfang Pei/CASIC (CNT ASIC)/Exp data/20241004 tft hfo2 40x25_selected',
-                 'Lingjiang': 'E:/PhD_research/Jingfang Pei/CNT-ASIC (CASIC)/Exp data/20241004 tft hfo2 40x25'}
+                 'Lingjiang': 'E:/PhD_research/Jingfang Pei/CNT-ASIC (CASIC)/Exp data/20241004 tft hfo2 40x25',
+                 'CentraHorizon': 'D:/Projects/Jingfang Pei/CNT-ASIC (CASIC)/Exp data/20x20 Data for stastistical TPU/data'}
 
 # 默认的数据保存目录字典
 saving_dir_dict = {'MMW405': 'E:/Projects/Jingfang Pei/CNT-ASIC (CASIC)/Exp data/Working_dir',
                    'JCPGH1': 'C:/Users/13682/OneDrive/桌面/Temporary_data/SolutionIC_glass',
                    'JinDiMingJin': 'E:/Projects/Jingfang Pei/CASIC (CNT ASIC)/Exp data/Working_dir',
-                   'Lingjiang': 'E:/PhD_research/Jingfang Pei/CNT-ASIC (CASIC)/Exp data/Working_dir'}
+                   'Lingjiang': 'E:/PhD_research/Jingfang Pei/CNT-ASIC (CASIC)/Exp data/Working_dir',
+                   'CentraHorizon': 'D:/Projects/Jingfang Pei/CNT-ASIC (CASIC)/Exp data/20x20 Data for stastistical TPU/demo'}
 
 def InitializeParser() -> argparse.Namespace:
     ''' 初始化命令行解析器, 并返回解析器对象 '''
@@ -104,9 +106,11 @@ if __name__ == '__main__':
         if isinstance(args.format, str):  # 只指定了一个格式
             plt.savefig(f"{args.saving_directory}/{character}.{args.format}")  # 保存图像
 
-        elif isinstance(args.format, tuple):  # 指定了多个格式
+        elif isinstance(args.format, tuple):  # 指定了多个格式，则保存到对应格式命名的目录下
             for fmt in args.format:
-                plt.savefig(f"{args.saving_directory}/{character}.{fmt}")
+                if not os.path.exists(f"{args.saving_directory}/{fmt}"):  # 检查保存目录是否存在
+                    os.makedirs(f"{args.saving_directory}/{fmt}")  # 如果不存在则创建目录
+                plt.savefig(f"{args.saving_directory}/{fmt}/{character}.{fmt}")  # 保存图像
 
         plt.close()  # 关闭图像
 
@@ -114,12 +118,14 @@ if __name__ == '__main__':
     for character in args.distribution:
         statistic.Distribution(character=character)  # 画分布图
 
-        if isinstance(args.format, str):
-            plt.savefig(f"{args.saving_directory}/{character}.{args.format}")
+        if isinstance(args.format, str):                                         # 只指定了一个格式
+            plt.savefig(f"{args.saving_directory}/{character}.{args.format}")    # 保存图像
 
-        elif isinstance(args.format, tuple):
+        elif isinstance(args.format, tuple):                                     # 指定了多个格式，则保存到对应格式命名的目录下
             for fmt in args.format:
-                plt.savefig(f"{args.saving_directory}/{character}.{fmt}")
+                if not os.path.exists(f"{args.saving_directory}/{fmt}"):         # 检查保存目录是否存在
+                    os.makedirs(f"{args.saving_directory}/{fmt}")                # 如果不存在则创建目录
+                plt.savefig(f"{args.saving_directory}/{fmt}/{character}.{fmt}")  # 保存图像
 
         plt.close()  # 关闭图像
 
