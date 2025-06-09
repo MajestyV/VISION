@@ -1,13 +1,19 @@
+# 统计器件特性脚本
 # 有时pycharm的文件结构和cmd的文件结构不一样，在cmd中运行会显示：ModuleNotFoundError: No module named 'src'
 # 这可以通过在脚本开头添加项目根目录到sys.path中解决，详情请参考：https://blog.csdn.net/qq_42730750/article/details/119799157
 import os
 import sys
-project_path = os.path.abspath(os.path.join(os.getcwd(), '..'))  # 项目根目录
+current_path = os.path.abspath(os.path.dirname(__file__))  # 获取文件目录
+project_path = current_path[:current_path.find('VISION') + len('VISION')]  # 获取项目根目录，搜索内容为当前项目的名字，即VISION
 sys.path.append(project_path)  # 添加路径到系统路径中
 
 import argparse
 from src import Electrica
 import matplotlib.pyplot as plt
+
+# 利用警告过滤器过滤警告信息 (https://blog.csdn.net/TeFuirnever/article/details/94122670)
+import warnings
+warnings.filterwarnings('ignore')
 
 working_loc = 'CentraHorizon'             # 默认工作地点
 

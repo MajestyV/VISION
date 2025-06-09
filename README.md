@@ -18,7 +18,9 @@ of python and R programming languages for scientific computing, that aims to sim
 Required packages:
 - *Data acquisition*: [Pandas](https://pandas.pydata.org/) & [Xlrd](https://xlrd.readthedocs.io/en/latest/)
 - *Scientific calculus*: [Numpy](https://numpy.org/) & [Scipy](https://www.scipy.org/)
+- *Machine learning & statistical analysis*: [Scikit-learn](https://scikit-learn.org/stable/)
 - *Visualization*: [Matplotlib](https://matplotlib.org/) & [Seaborn](https://seaborn.pydata.org/)
+- *Notebook interface for python*: [JupyterLab](https://jupyter.org/install)
 
 ### ii. Managing python environment via anaconda
 
