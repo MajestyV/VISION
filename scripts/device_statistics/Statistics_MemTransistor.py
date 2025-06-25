@@ -55,7 +55,7 @@ def InitializeParser() -> argparse.Namespace:
     # parser.add_argument('--SS_range', metavar='-SS', type=tuple, default=(0.25, 0.3), help='SS range')  # SS范围
 
     parser.add_argument('--V_FullWidth', metavar='-V_FullWidth', type=float, default=1.0, help='V FullWidth')  # 摆幅电压衡量区间全宽度
-    parser.add_argument('--window_size', metavar='-W', type=int, default=5, help='Window size')  # 窗口大小
+    parser.add_argument('--window_size', metavar='-W', type=int, default=30, help='Window size')  # 窗口大小
     parser.add_argument('--boundary_cond', metavar='-B', type=str, default='same', help='Boundary condition')  # 边界条件
     parser.add_argument('--Vth_eval_range', metavar='-Vth', type=tuple, default=(-6,8), help='Vth evaluation range')  # 阈值电压评估范围
     parser.add_argument('--mem_eval_range', metavar='-Mem', type=tuple, default=(-6,8), help='Memory evaluation range')  # 存储评估范围
@@ -80,7 +80,7 @@ def InitializeParser() -> argparse.Namespace:
     # https://blog.csdn.net/qinduohao333/article/details/131305803
     # https://blog.csdn.net/orangeOrangeRed/article/details/117624905?login=from_csdn
     parser.add_argument('-AN', '--annot', action='store_true', help='Annotation on the heatmap')  # 是否标注
-    parser.add_argument('-CM', '--colormap', metavar='colormap', type=str, default='viridis', help='Colormap of the heatmap')  # 色图
+    parser.add_argument('-CM', '--colormap', metavar='colormap', type=str, default='plasma', help='Colormap of the heatmap')  # 色图
     parser.add_argument('-CM_source', '--colormap_source', metavar='colormap source', type=str, default='default', help='Source of the colormap')  # 色图来源
 
     # 图像保存参数

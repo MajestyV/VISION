@@ -120,7 +120,7 @@ class MemTransistorStatistics:
     def Heatmap(self, character: str, figsize: tuple[float,float]=(12,8), annot: bool=True,
                 colormap: str='coolwarm', colormap_source: str='default') -> None:
         '''
-        热力图 （关于seaborn的设置，参考：https://blog.csdn.net/weixin_45492560/article/details/106227864）
+        热力图 (关于seaborn的设置, 参考: https://blog.csdn.net/weixin_45492560/article/details/106227864)
         '''
 
         # 画图参数设置
@@ -156,7 +156,7 @@ class MemTransistorStatistics:
 
         elif character == 'memory_window':
             data = self.data_dict['MemWindow_map']*self.voltage_scaling
-            fig = sns.heatmap(data, annot=annot, fmt='.1f', cmap=colormap,
+            fig = sns.heatmap(data, annot=annot, fmt='.1f', cmap=colormap, vmin=5, vmax=12,
                               cbar_kws={'label': f"Memory Window ({self.voltage_unit})"})
 
         # 亚阈值摆幅（Subthreshold Swing）
