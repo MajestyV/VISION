@@ -80,7 +80,7 @@ def InitializeParser() -> argparse.Namespace:
     # https://blog.csdn.net/qinduohao333/article/details/131305803
     # https://blog.csdn.net/orangeOrangeRed/article/details/117624905?login=from_csdn
     parser.add_argument('-AN', '--annot', action='store_true', help='Annotation on the heatmap')  # 是否标注
-    parser.add_argument('-CM', '--colormap', metavar='colormap', type=str, default='magma', help='Colormap of the heatmap')  # 色图
+    parser.add_argument('-CM', '--colormap', metavar='colormap', type=str, default='plasma', help='Colormap of the heatmap')  # 色图
     parser.add_argument('-CM_source', '--colormap_source', metavar='colormap source', type=str, default='default', help='Source of the colormap')  # 色图来源
 
     # 图像保存参数
@@ -103,36 +103,10 @@ if __name__ == '__main__':
                        ON_range=args.ON_range, OFF_range=args.OFF_range, V_FullWidth=args.V_FullWidth,
                        window_size=args.window_size, boundary_cond=args.boundary_cond, Vth_eval_range=args.Vth_eval_range,
                        mem_eval_range=args.mem_eval_range, SS_eval_range=args.SS_eval_range)
+    
+    # 保存统计结果到文本文件
+    on_off_ratio_extremum = statistic.data_dict['on_off_ratio_extremum_map']
 
-    # 热度图
-    for character in args.heatmap:
-        # 画热度图
-        statistic.Heatmap(character=character, annot=args.annot, colormap=args.colormap, colormap_source=args.colormap_source)
+    print(f'ON_OFF_ratio_extremum_map: {on_off_ratio_extremum}')  # 打印ON_OFF_ratio_extremum_map
 
-        if isinstance(args.format, str):  # 只指定了一个格式
-            plt.savefig(f"{args.saving_directory}/{character}.{args.format}")  # 保存图像
-
-        elif isinstance(args.format, tuple):  # 指定了多个格式，则保存到对应格式命名的目录下
-            for fmt in args.format:
-                if not os.path.exists(f"{args.saving_directory}/{fmt}"):  # 检查保存目录是否存在
-                    os.makedirs(f"{args.saving_directory}/{fmt}")  # 如果不存在则创建目录
-                plt.savefig(f"{args.saving_directory}/{fmt}/{character}.{fmt}")  # 保存图像
-
-        plt.close()  # 关闭图像
-
-    # 分布图
-    for character in args.distribution:
-        statistic.Distribution(character=character)  # 画分布图
-
-        if isinstance(args.format, str):                                         # 只指定了一个格式
-            plt.savefig(f"{args.saving_directory}/{character}.{args.format}")    # 保存图像
-
-        elif isinstance(args.format, tuple):                                     # 指定了多个格式，则保存到对应格式命名的目录下
-            for fmt in args.format:
-                if not os.path.exists(f"{args.saving_directory}/{fmt}"):         # 检查保存目录是否存在
-                    os.makedirs(f"{args.saving_directory}/{fmt}")                # 如果不存在则创建目录
-                plt.savefig(f"{args.saving_directory}/{fmt}/{character}.{fmt}")  # 保存图像
-
-        plt.close()  # 关闭图像
-
-    print('Analysis completed!')
+    # statistic.SaveTXT(saving_directory=args.saving_directory, file_name='MemTransistor_statistics.txt')
